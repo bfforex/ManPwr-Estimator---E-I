@@ -492,6 +492,7 @@
         <button class="nav-tab active" onclick="showTab('dashboard', this)">📊 Dashboard</button>
         <button class="nav-tab" onclick="showTab('modules', this)">🏗️ Modules</button>
         <button class="nav-tab" onclick="showTab('deliverables', this)">📋 Deliverables</button>
+        <button class="nav-tab" onclick="showTab('parametric', this)">🔧 Parametric Model</button>
         <button class="nav-tab" onclick="showTab('kpis', this)">⚙️ KPIs</button>
         <button class="nav-tab" onclick="showTab('results', this)">📈 Results</button>
         <button class="nav-tab" onclick="showTab('reports', this)">📄 Reports</button>
@@ -570,6 +571,255 @@
             </div>
         </div>
 
+        <!-- Parametric Model Tab -->
+        <div id="parametric" class="tab-content">
+            <div class="card">
+                <div class="section-header">
+                    <h3 class="section-title">Parametric Estimation Model</h3>
+                    <div>
+                        <button class="btn btn-primary" onclick="resetParametricModel()">Reset to Defaults</button>
+                        <button class="btn btn-secondary" onclick="toggleParametricHelp()">📖 Help</button>
+                    </div>
+                </div>
+                
+                <div id="parametricHelp" class="card" style="display: none; margin-bottom: 2rem; background: var(--light-blue); border-left: 4px solid var(--primary-blue);">
+                    <h4 style="color: var(--primary-blue); margin-bottom: 1rem;">Parametric Model Documentation</h4>
+                    <p><strong>Purpose:</strong> This parametric model adjusts base estimates using industry-specific factors to provide more accurate manpower and cost estimates.</p>
+                    <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                        <li><strong>Productivity Factor:</strong> Adjusts estimates based on team experience and efficiency (0.5-1.5)</li>
+                        <li><strong>Onboarding/Offboarding:</strong> Accounts for time needed to integrate new team members</li>
+                        <li><strong>Leave Rate:</strong> Compensates for vacation, sick leave, and other absences</li>
+                        <li><strong>Documentation Effort:</strong> Additional time for as-built drawings and redlines</li>
+                        <li><strong>Client Interaction:</strong> Time allocated for meetings, reviews, and approvals</li>
+                        <li><strong>Contingency:</strong> Buffer for unforeseen project risks and changes</li>
+                    </ul>
+                </div>
+
+                <!-- Productivity Metrics Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Productivity Metrics</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableProductivityAdjustment" checked onchange="toggleParametricFactor('productivity')"> 
+                            Enable Productivity Adjustment
+                        </label>
+                    </div>
+                    <div class="form-grid" id="productivitySection">
+                        <div class="form-group">
+                            <label class="form-label">Team Experience Level</label>
+                            <select class="form-select" id="teamExperience" onchange="updateParametricModel()">
+                                <option value="1.2">Inexperienced Team (20% slower)</option>
+                                <option value="1.0" selected>Standard Team (Baseline)</option>
+                                <option value="0.85">Experienced Team (15% faster)</option>
+                                <option value="0.7">Expert Team (30% faster)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Project Familiarity Factor</label>
+                            <select class="form-select" id="projectFamiliarity" onchange="updateParametricModel()">
+                                <option value="1.15">New Technology/Process (15% slower)</option>
+                                <option value="1.0" selected>Standard Project Type</option>
+                                <option value="0.9">Similar Previous Project (10% faster)</option>
+                                <option value="0.8">Repeat Project Type (20% faster)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Custom Productivity Factor</label>
+                            <input type="number" class="form-input" id="customProductivity" value="1.0" min="0.5" max="2.0" step="0.05" onchange="updateParametricModel()">
+                            <small style="color: var(--gray-600);">Override above selections (0.5-2.0)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resource Timing Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Resource Onboarding & Offboarding</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableResourceTiming" checked onchange="toggleParametricFactor('resourceTiming')"> 
+                            Include Resource Timing
+                        </label>
+                    </div>
+                    <div class="form-grid" id="resourceTimingSection">
+                        <div class="form-group">
+                            <label class="form-label">Onboarding Time per Engineer (days)</label>
+                            <input type="number" class="form-input" id="onboardingDays" value="3" min="0" max="10" onchange="updateParametricModel()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Offboarding Time per Engineer (days)</label>
+                            <input type="number" class="form-input" id="offboardingDays" value="1" min="0" max="5" onchange="updateParametricModel()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Expected Team Size</label>
+                            <input type="number" class="form-input" id="teamSize" value="5" min="1" max="50" onchange="updateParametricModel()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leave Rate Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Leave Rate Adjustments</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableLeaveRate" checked onchange="toggleParametricFactor('leaveRate')"> 
+                            Apply Leave Rate Adjustment
+                        </label>
+                    </div>
+                    <div class="form-grid" id="leaveRateSection">
+                        <div class="form-group">
+                            <label class="form-label">Annual Leave Days</label>
+                            <input type="number" class="form-input" id="annualLeaveDays" value="15" min="0" max="30" onchange="updateParametricModel()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sick Leave Days</label>
+                            <input type="number" class="form-input" id="sickLeaveDays" value="5" min="0" max="15" onchange="updateParametricModel()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Public Holidays</label>
+                            <input type="number" class="form-input" id="publicHolidays" value="12" min="0" max="20" onchange="updateParametricModel()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Monthly Leave Rate (%)</label>
+                            <input type="number" class="form-input" id="monthlyLeaveRate" value="10" min="0" max="25" step="0.5" onchange="updateParametricModel()" readonly>
+                            <small style="color: var(--gray-600);">Calculated from above inputs</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documentation Requirements Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Documentation Requirements</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableDocumentation" checked onchange="toggleParametricFactor('documentation')"> 
+                            Include Documentation Effort
+                        </label>
+                    </div>
+                    <div class="form-grid" id="documentationSection">
+                        <div class="form-group">
+                            <label class="form-label">As-Built Documentation Required</label>
+                            <select class="form-select" id="asBuiltLevel" onchange="updateParametricModel()">
+                                <option value="0">None Required</option>
+                                <option value="0.05">Basic As-Built (5% of design time)</option>
+                                <option value="0.1" selected>Standard As-Built (10% of design time)</option>
+                                <option value="0.15">Detailed As-Built (15% of design time)</option>
+                                <option value="0.2">Comprehensive As-Built (20% of design time)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Redline Management</label>
+                            <select class="form-select" id="redlineLevel" onchange="updateParametricModel()">
+                                <option value="0">No Redline Management</option>
+                                <option value="0.03">Basic Redline Tracking (3%)</option>
+                                <option value="0.05" selected>Standard Redline Process (5%)</option>
+                                <option value="0.08">Detailed Redline Management (8%)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Documentation Quality Level</label>
+                            <select class="form-select" id="docQualityLevel" onchange="updateParametricModel()">
+                                <option value="1.0" selected>Standard Quality</option>
+                                <option value="1.1">High Quality (+10%)</option>
+                                <option value="1.2">Premium Quality (+20%)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client Interaction Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Client Interaction Requirements</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableClientInteraction" checked onchange="toggleParametricFactor('clientInteraction')"> 
+                            Include Client Interaction Time
+                        </label>
+                    </div>
+                    <div class="form-grid" id="clientInteractionSection">
+                        <div class="form-group">
+                            <label class="form-label">Weekly Meetings (hours/week)</label>
+                            <input type="number" class="form-input" id="weeklyMeetings" value="4" min="0" max="20" onchange="updateParametricModel()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Site Visits Required</label>
+                            <input type="number" class="form-input" id="siteVisits" value="2" min="0" max="10" onchange="updateParametricModel()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Review Cycles</label>
+                            <select class="form-select" id="reviewCycles" onchange="updateParametricModel()">
+                                <option value="0.02">Minimal Reviews (2%)</option>
+                                <option value="0.05" selected>Standard Reviews (5%)</option>
+                                <option value="0.08">Intensive Reviews (8%)</option>
+                                <option value="0.12">Comprehensive Reviews (12%)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Client Approval Complexity</label>
+                            <select class="form-select" id="approvalComplexity" onchange="updateParametricModel()">
+                                <option value="1.0" selected>Standard Process</option>
+                                <option value="1.1">Complex Approval (+10%)</option>
+                                <option value="1.2">Multiple Stakeholders (+20%)</option>
+                                <option value="1.3">Regulatory Requirements (+30%)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contingency Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Contingency Factors</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableContingency" checked onchange="toggleParametricFactor('contingency')"> 
+                            Apply Contingency Factor
+                        </label>
+                    </div>
+                    <div class="form-grid" id="contingencySection">
+                        <div class="form-group">
+                            <label class="form-label">Technical Risk (%)</label>
+                            <input type="number" class="form-input" id="technicalRisk" value="5" min="0" max="25" step="0.5" onchange="updateParametricModel()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Schedule Risk (%)</label>
+                            <input type="number" class="form-input" id="scheduleRisk" value="3" min="0" max="20" step="0.5" onchange="updateParametricModel()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Scope Change Risk (%)</label>
+                            <input type="number" class="form-input" id="scopeRisk" value="7" min="0" max="30" step="0.5" onchange="updateParametricModel()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Total Contingency (%)</label>
+                            <input type="number" class="form-input" id="totalContingency" value="15" min="0" max="50" step="0.5" onchange="updateParametricModel()" readonly>
+                            <small style="color: var(--gray-600);">Calculated from individual risks</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parametric Model Summary -->
+                <div class="card" style="background: var(--gray-50); border: 2px solid var(--primary-blue);">
+                    <h4 style="color: var(--primary-blue); margin-bottom: 1rem;">Parametric Model Impact Summary</h4>
+                    <div class="kpi-grid" id="parametricSummary">
+                        <div class="kpi-item">
+                            <div class="kpi-label">Base Estimate Adjustment</div>
+                            <div class="kpi-value" id="baseAdjustment">+0%</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Total Parametric Factor</div>
+                            <div class="kpi-value" id="totalParametricFactor">1.00x</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Additional Hours</div>
+                            <div class="kpi-value" id="additionalHours">0</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Cost Impact</div>
+                            <div class="kpi-value" id="costImpact">₱0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Results Tab -->
         <div id="results" class="tab-content">
             <div class="card">
@@ -631,6 +881,49 @@
             deliverables: [],
             kpis: {},
             results: {},
+            parametricModel: {
+                enabled: {
+                    productivity: true,
+                    resourceTiming: true,
+                    leaveRate: true,
+                    documentation: true,
+                    clientInteraction: true,
+                    contingency: true
+                },
+                productivity: {
+                    teamExperience: 1.0,
+                    projectFamiliarity: 1.0,
+                    customProductivity: 1.0
+                },
+                resourceTiming: {
+                    onboardingDays: 3,
+                    offboardingDays: 1,
+                    teamSize: 5
+                },
+                leaveRate: {
+                    annualLeaveDays: 15,
+                    sickLeaveDays: 5,
+                    publicHolidays: 12,
+                    monthlyLeaveRate: 10
+                },
+                documentation: {
+                    asBuiltLevel: 0.1,
+                    redlineLevel: 0.05,
+                    docQualityLevel: 1.0
+                },
+                clientInteraction: {
+                    weeklyMeetings: 4,
+                    siteVisits: 2,
+                    reviewCycles: 0.05,
+                    approvalComplexity: 1.0
+                },
+                contingency: {
+                    technicalRisk: 5,
+                    scheduleRisk: 3,
+                    scopeRisk: 7,
+                    totalContingency: 15
+                }
+            },
             projectInfo: {
                 name: 'New E&I Project',
                 description: 'Electrical & Instrumentation Estimate',
@@ -693,6 +986,7 @@
             renderModules();
             renderDeliverables();
             renderKPIs();
+            initializeParametricModel();
             calculateResults();
             updateDashboard();
             
@@ -700,6 +994,396 @@
             if (appState.modules.length === 0) {
                 showNotification('Welcome! Click "Add Module" to start your estimate.', 'success');
             }
+        }
+
+        // Parametric Model Functions
+        function initializeParametricModel() {
+            // Initialize form values from state
+            if (appState.parametricModel) {
+                updateParametricFormValues();
+                updateParametricModel();
+            }
+        }
+
+        function updateParametricFormValues() {
+            const pm = appState.parametricModel;
+            if (!pm) return;
+            
+            // Productivity section
+            const enableProductivity = document.getElementById('enableProductivityAdjustment');
+            if (enableProductivity) enableProductivity.checked = pm.enabled.productivity;
+            
+            const teamExperience = document.getElementById('teamExperience');
+            if (teamExperience) teamExperience.value = pm.productivity.teamExperience;
+            
+            const projectFamiliarity = document.getElementById('projectFamiliarity');
+            if (projectFamiliarity) projectFamiliarity.value = pm.productivity.projectFamiliarity;
+            
+            const customProductivity = document.getElementById('customProductivity');
+            if (customProductivity) customProductivity.value = pm.productivity.customProductivity;
+            
+            // Resource timing section
+            const enableResourceTiming = document.getElementById('enableResourceTiming');
+            if (enableResourceTiming) enableResourceTiming.checked = pm.enabled.resourceTiming;
+            
+            const onboardingDays = document.getElementById('onboardingDays');
+            if (onboardingDays) onboardingDays.value = pm.resourceTiming.onboardingDays;
+            
+            const offboardingDays = document.getElementById('offboardingDays');
+            if (offboardingDays) offboardingDays.value = pm.resourceTiming.offboardingDays;
+            
+            const teamSize = document.getElementById('teamSize');
+            if (teamSize) teamSize.value = pm.resourceTiming.teamSize;
+            
+            // Leave rate section
+            const enableLeaveRate = document.getElementById('enableLeaveRate');
+            if (enableLeaveRate) enableLeaveRate.checked = pm.enabled.leaveRate;
+            
+            const annualLeaveDays = document.getElementById('annualLeaveDays');
+            if (annualLeaveDays) annualLeaveDays.value = pm.leaveRate.annualLeaveDays;
+            
+            const sickLeaveDays = document.getElementById('sickLeaveDays');
+            if (sickLeaveDays) sickLeaveDays.value = pm.leaveRate.sickLeaveDays;
+            
+            const publicHolidays = document.getElementById('publicHolidays');
+            if (publicHolidays) publicHolidays.value = pm.leaveRate.publicHolidays;
+            
+            // Documentation section
+            const enableDocumentation = document.getElementById('enableDocumentation');
+            if (enableDocumentation) enableDocumentation.checked = pm.enabled.documentation;
+            
+            const asBuiltLevel = document.getElementById('asBuiltLevel');
+            if (asBuiltLevel) asBuiltLevel.value = pm.documentation.asBuiltLevel;
+            
+            const redlineLevel = document.getElementById('redlineLevel');
+            if (redlineLevel) redlineLevel.value = pm.documentation.redlineLevel;
+            
+            const docQualityLevel = document.getElementById('docQualityLevel');
+            if (docQualityLevel) docQualityLevel.value = pm.documentation.docQualityLevel;
+            
+            // Client interaction section
+            const enableClientInteraction = document.getElementById('enableClientInteraction');
+            if (enableClientInteraction) enableClientInteraction.checked = pm.enabled.clientInteraction;
+            
+            const weeklyMeetings = document.getElementById('weeklyMeetings');
+            if (weeklyMeetings) weeklyMeetings.value = pm.clientInteraction.weeklyMeetings;
+            
+            const siteVisits = document.getElementById('siteVisits');
+            if (siteVisits) siteVisits.value = pm.clientInteraction.siteVisits;
+            
+            const reviewCycles = document.getElementById('reviewCycles');
+            if (reviewCycles) reviewCycles.value = pm.clientInteraction.reviewCycles;
+            
+            const approvalComplexity = document.getElementById('approvalComplexity');
+            if (approvalComplexity) approvalComplexity.value = pm.clientInteraction.approvalComplexity;
+            
+            // Contingency section
+            const enableContingency = document.getElementById('enableContingency');
+            if (enableContingency) enableContingency.checked = pm.enabled.contingency;
+            
+            const technicalRisk = document.getElementById('technicalRisk');
+            if (technicalRisk) technicalRisk.value = pm.contingency.technicalRisk;
+            
+            const scheduleRisk = document.getElementById('scheduleRisk');
+            if (scheduleRisk) scheduleRisk.value = pm.contingency.scheduleRisk;
+            
+            const scopeRisk = document.getElementById('scopeRisk');
+            if (scopeRisk) scopeRisk.value = pm.contingency.scopeRisk;
+            
+            // Toggle sections based on enabled state
+            setTimeout(() => {
+                toggleParametricFactor('productivity');
+                toggleParametricFactor('resourceTiming');
+                toggleParametricFactor('leaveRate');
+                toggleParametricFactor('documentation');
+                toggleParametricFactor('clientInteraction');
+                toggleParametricFactor('contingency');
+            }, 100);
+        }
+
+        function toggleParametricFactor(factor) {
+            const enableCheckbox = document.getElementById(`enable${factor.charAt(0).toUpperCase() + factor.slice(1)}`);
+            if (!enableCheckbox) {
+                console.warn(`Checkbox for ${factor} not found`);
+                return;
+            }
+            
+            const enabled = enableCheckbox.checked;
+            appState.parametricModel.enabled[factor] = enabled;
+            
+            const sectionId = factor + 'Section';
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.opacity = enabled ? '1' : '0.5';
+                section.style.pointerEvents = enabled ? 'auto' : 'none';
+            }
+            
+            updateParametricModel();
+            saveToStorage();
+        }
+
+        function updateParametricModel() {
+            const pm = appState.parametricModel;
+            if (!pm) return;
+            
+            // Update productivity values
+            const teamExperience = document.getElementById('teamExperience');
+            if (teamExperience) pm.productivity.teamExperience = parseFloat(teamExperience.value);
+            
+            const projectFamiliarity = document.getElementById('projectFamiliarity');
+            if (projectFamiliarity) pm.productivity.projectFamiliarity = parseFloat(projectFamiliarity.value);
+            
+            const customProductivity = document.getElementById('customProductivity');
+            if (customProductivity) pm.productivity.customProductivity = parseFloat(customProductivity.value);
+            
+            // Update resource timing values
+            const onboardingDays = document.getElementById('onboardingDays');
+            if (onboardingDays) pm.resourceTiming.onboardingDays = parseInt(onboardingDays.value) || 0;
+            
+            const offboardingDays = document.getElementById('offboardingDays');
+            if (offboardingDays) pm.resourceTiming.offboardingDays = parseInt(offboardingDays.value) || 0;
+            
+            const teamSize = document.getElementById('teamSize');
+            if (teamSize) pm.resourceTiming.teamSize = parseInt(teamSize.value) || 1;
+            
+            // Update and calculate leave rate
+            const annualLeaveDays = document.getElementById('annualLeaveDays');
+            if (annualLeaveDays) pm.leaveRate.annualLeaveDays = parseInt(annualLeaveDays.value) || 0;
+            
+            const sickLeaveDays = document.getElementById('sickLeaveDays');
+            if (sickLeaveDays) pm.leaveRate.sickLeaveDays = parseInt(sickLeaveDays.value) || 0;
+            
+            const publicHolidays = document.getElementById('publicHolidays');
+            if (publicHolidays) pm.leaveRate.publicHolidays = parseInt(publicHolidays.value) || 0;
+            
+            // Calculate monthly leave rate
+            const totalLeaveDays = pm.leaveRate.annualLeaveDays + pm.leaveRate.sickLeaveDays + pm.leaveRate.publicHolidays;
+            const workingDaysYear = 260; // Approximately 5 days * 52 weeks
+            pm.leaveRate.monthlyLeaveRate = Math.round((totalLeaveDays / workingDaysYear) * 100 * 10) / 10;
+            const monthlyLeaveRate = document.getElementById('monthlyLeaveRate');
+            if (monthlyLeaveRate) monthlyLeaveRate.value = pm.leaveRate.monthlyLeaveRate;
+            
+            // Update documentation values
+            const asBuiltLevel = document.getElementById('asBuiltLevel');
+            if (asBuiltLevel) pm.documentation.asBuiltLevel = parseFloat(asBuiltLevel.value);
+            
+            const redlineLevel = document.getElementById('redlineLevel');
+            if (redlineLevel) pm.documentation.redlineLevel = parseFloat(redlineLevel.value);
+            
+            const docQualityLevel = document.getElementById('docQualityLevel');
+            if (docQualityLevel) pm.documentation.docQualityLevel = parseFloat(docQualityLevel.value);
+            
+            // Update client interaction values
+            const weeklyMeetings = document.getElementById('weeklyMeetings');
+            if (weeklyMeetings) pm.clientInteraction.weeklyMeetings = parseInt(weeklyMeetings.value) || 0;
+            
+            const siteVisits = document.getElementById('siteVisits');
+            if (siteVisits) pm.clientInteraction.siteVisits = parseInt(siteVisits.value) || 0;
+            
+            const reviewCycles = document.getElementById('reviewCycles');
+            if (reviewCycles) pm.clientInteraction.reviewCycles = parseFloat(reviewCycles.value);
+            
+            const approvalComplexity = document.getElementById('approvalComplexity');
+            if (approvalComplexity) pm.clientInteraction.approvalComplexity = parseFloat(approvalComplexity.value);
+            
+            // Update and calculate contingency
+            const technicalRisk = document.getElementById('technicalRisk');
+            if (technicalRisk) pm.contingency.technicalRisk = parseFloat(technicalRisk.value) || 0;
+            
+            const scheduleRisk = document.getElementById('scheduleRisk');
+            if (scheduleRisk) pm.contingency.scheduleRisk = parseFloat(scheduleRisk.value) || 0;
+            
+            const scopeRisk = document.getElementById('scopeRisk');
+            if (scopeRisk) pm.contingency.scopeRisk = parseFloat(scopeRisk.value) || 0;
+            
+            pm.contingency.totalContingency = pm.contingency.technicalRisk + pm.contingency.scheduleRisk + pm.contingency.scopeRisk;
+            const totalContingency = document.getElementById('totalContingency');
+            if (totalContingency) totalContingency.value = pm.contingency.totalContingency;
+            
+            // Update summary display
+            updateParametricSummary();
+            
+            // Recalculate results with new parametric factors
+            calculateResults();
+            saveToStorage();
+        }
+
+        function calculateParametricFactors() {
+            const pm = appState.parametricModel;
+            if (!pm) {
+                return {
+                    productivity: 1.0,
+                    resourceTiming: 0,
+                    leaveRate: 1.0,
+                    documentation: 1.0,
+                    clientInteraction: 1.0,
+                    contingency: 1.0,
+                    totalMultiplier: 1.0,
+                    additionalHours: 0
+                };
+            }
+            
+            let parametricFactors = {
+                productivity: 1.0,
+                resourceTiming: 0, // Additional hours, not a multiplier
+                leaveRate: 1.0,
+                documentation: 1.0,
+                clientInteraction: 1.0,
+                contingency: 1.0,
+                totalMultiplier: 1.0,
+                additionalHours: 0
+            };
+            
+            // Calculate productivity factor
+            if (pm.enabled.productivity) {
+                if (pm.productivity.customProductivity !== 1.0) {
+                    parametricFactors.productivity = pm.productivity.customProductivity || 1.0;
+                } else {
+                    const teamExp = pm.productivity.teamExperience || 1.0;
+                    const projFam = pm.productivity.projectFamiliarity || 1.0;
+                    parametricFactors.productivity = teamExp * projFam;
+                }
+            }
+            
+            // Calculate resource timing (additional hours)
+            if (pm.enabled.resourceTiming) {
+                const onboardingDays = pm.resourceTiming.onboardingDays || 0;
+                const offboardingDays = pm.resourceTiming.offboardingDays || 0;
+                const teamSize = pm.resourceTiming.teamSize || 1;
+                const totalOnboardingHours = (onboardingDays * 8) * teamSize;
+                const totalOffboardingHours = (offboardingDays * 8) * teamSize;
+                parametricFactors.resourceTiming = totalOnboardingHours + totalOffboardingHours;
+                parametricFactors.additionalHours += parametricFactors.resourceTiming;
+            }
+            
+            // Calculate leave rate factor
+            if (pm.enabled.leaveRate) {
+                const monthlyLeaveRate = pm.leaveRate.monthlyLeaveRate || 0;
+                parametricFactors.leaveRate = 1 + (monthlyLeaveRate / 100);
+            }
+            
+            // Calculate documentation factor
+            if (pm.enabled.documentation) {
+                const asBuiltLevel = pm.documentation.asBuiltLevel || 0;
+                const redlineLevel = pm.documentation.redlineLevel || 0;
+                const docQualityLevel = pm.documentation.docQualityLevel || 1.0;
+                const docFactor = 1 + asBuiltLevel + redlineLevel;
+                parametricFactors.documentation = docFactor * docQualityLevel;
+            }
+            
+            // Calculate client interaction factor
+            if (pm.enabled.clientInteraction) {
+                // Weekly meetings impact (assume project duration in weeks or default to 12 weeks)
+                const projectDurationMonths = (appState.results && appState.results.duration) ? appState.results.duration.months : 3;
+                const projectDurationWeeks = projectDurationMonths * 4.33;
+                const weeklyMeetings = pm.clientInteraction.weeklyMeetings || 0;
+                const siteVisits = pm.clientInteraction.siteVisits || 0;
+                const meetingHours = weeklyMeetings * projectDurationWeeks;
+                const siteVisitHours = siteVisits * 8; // 8 hours per site visit
+                parametricFactors.additionalHours += meetingHours + siteVisitHours;
+                
+                // Review cycles and approval complexity
+                const reviewCycles = pm.clientInteraction.reviewCycles || 0;
+                const approvalComplexity = pm.clientInteraction.approvalComplexity || 1.0;
+                const interactionFactor = (1 + reviewCycles) * approvalComplexity;
+                parametricFactors.clientInteraction = interactionFactor;
+            }
+            
+            // Calculate contingency factor
+            if (pm.enabled.contingency) {
+                const totalContingency = pm.contingency.totalContingency || 0;
+                parametricFactors.contingency = 1 + (totalContingency / 100);
+            }
+            
+            // Calculate total multiplier (ensure no null values)
+            parametricFactors.totalMultiplier = (parametricFactors.productivity || 1.0) * 
+                                               (parametricFactors.leaveRate || 1.0) * 
+                                               (parametricFactors.documentation || 1.0) * 
+                                               (parametricFactors.clientInteraction || 1.0) * 
+                                               (parametricFactors.contingency || 1.0);
+            
+            return parametricFactors;
+        }
+
+        function updateParametricSummary() {
+            const factors = calculateParametricFactors();
+            
+            // Get base manhours - use current results or 0 if no modules
+            const baseManhours = appState.results?.totalManhours || 0;
+            const baseBeforeParametric = appState.results?.baseManhoursBeforeParametric || baseManhours;
+            
+            // Calculate adjustment percentage
+            const baseAdjustment = baseManhours > 0 ? ((factors.totalMultiplier - 1) * 100) : 0;
+            const baseAdjustmentSign = baseAdjustment >= 0 ? '+' : '';
+            
+            // Update summary display
+            document.getElementById('baseAdjustment').textContent = baseAdjustmentSign + baseAdjustment.toFixed(1) + '%';
+            document.getElementById('totalParametricFactor').textContent = factors.totalMultiplier.toFixed(2) + 'x';
+            document.getElementById('additionalHours').textContent = Math.round(factors.additionalHours).toLocaleString();
+            
+            // Calculate cost impact 
+            const hourlyRate = appState.kpis.hourly_rate?.value || 850;
+            const additionalCost = factors.additionalHours * hourlyRate;
+            const multiplierCostImpact = baseBeforeParametric * (factors.totalMultiplier - 1) * hourlyRate;
+            const totalCostImpact = additionalCost + multiplierCostImpact;
+            
+            document.getElementById('costImpact').textContent = '₱' + Math.round(totalCostImpact).toLocaleString();
+        }
+
+        function resetParametricModel() {
+            // Reset to default values
+            appState.parametricModel = {
+                enabled: {
+                    productivity: true,
+                    resourceTiming: true,
+                    leaveRate: true,
+                    documentation: true,
+                    clientInteraction: true,
+                    contingency: true
+                },
+                productivity: {
+                    teamExperience: 1.0,
+                    projectFamiliarity: 1.0,
+                    customProductivity: 1.0
+                },
+                resourceTiming: {
+                    onboardingDays: 3,
+                    offboardingDays: 1,
+                    teamSize: 5
+                },
+                leaveRate: {
+                    annualLeaveDays: 15,
+                    sickLeaveDays: 5,
+                    publicHolidays: 12,
+                    monthlyLeaveRate: 10
+                },
+                documentation: {
+                    asBuiltLevel: 0.1,
+                    redlineLevel: 0.05,
+                    docQualityLevel: 1.0
+                },
+                clientInteraction: {
+                    weeklyMeetings: 4,
+                    siteVisits: 2,
+                    reviewCycles: 0.05,
+                    approvalComplexity: 1.0
+                },
+                contingency: {
+                    technicalRisk: 5,
+                    scheduleRisk: 3,
+                    scopeRisk: 7,
+                    totalContingency: 15
+                }
+            };
+            
+            updateParametricFormValues();
+            updateParametricModel();
+            showNotification('Parametric model reset to default values', 'success');
+        }
+
+        function toggleParametricHelp() {
+            const helpSection = document.getElementById('parametricHelp');
+            helpSection.style.display = helpSection.style.display === 'none' ? 'block' : 'none';
         }
 
         // Tab Management
@@ -731,6 +1415,8 @@
                 renderDeliverables();
             } else if (tabId === 'kpis') {
                 renderKPIs();
+            } else if (tabId === 'parametric') {
+                initializeParametricModel();
             }
         }
 
@@ -1010,6 +1696,7 @@
         function calculateResults() {
             const results = {
                 totalManhours: 0,
+                baseManhoursBeforeParametric: 0,
                 byModule: [],
                 bySystem: {
                     electrical: 0,
@@ -1021,6 +1708,12 @@
                 duration: {
                     days: 0,
                     months: 0
+                },
+                parametricBreakdown: {
+                    baseManhours: 0,
+                    additionalHours: 0,
+                    multiplierEffect: 0,
+                    finalManhours: 0
                 }
             };
 
@@ -1065,6 +1758,10 @@
                 results.byModule.push(moduleResults);
             });
 
+            // Store base manhours before parametric adjustments
+            results.baseManhoursBeforeParametric = results.totalManhours;
+            results.parametricBreakdown.baseManhours = results.totalManhours;
+
             // Apply deliverable multipliers to manhours
             appState.deliverables.forEach(deliverable => {
                 if (deliverable.selected) {
@@ -1078,8 +1775,24 @@
                 }
             });
 
-            // Apply productivity factor
-            if (appState.kpis.productivity_factor) {
+            // Apply parametric factors if parametric model is available
+            if (appState.parametricModel) {
+                const parametricFactors = calculateParametricFactors();
+                
+                // Store parametric breakdown for transparency
+                results.parametricBreakdown.additionalHours = parametricFactors.additionalHours;
+                results.parametricBreakdown.multiplierEffect = (parametricFactors.totalMultiplier - 1) * results.totalManhours;
+                
+                // Apply parametric adjustments
+                results.totalManhours = (results.totalManhours * parametricFactors.totalMultiplier) + parametricFactors.additionalHours;
+                results.parametricBreakdown.finalManhours = results.totalManhours;
+                
+                // Update parametric summary
+                updateParametricSummary();
+            }
+
+            // Apply productivity factor (legacy support)
+            if (appState.kpis.productivity_factor && !appState.parametricModel?.enabled.productivity) {
                 const productivityFactor = appState.kpis.productivity_factor.value;
                 results.totalManhours = results.totalManhours / productivityFactor;
             }

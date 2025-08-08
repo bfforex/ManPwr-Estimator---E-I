@@ -421,28 +421,69 @@
 
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
         .kpi-item {
             background: white;
-            padding: 1rem;
-            border-radius: 8px;
+            padding: 1.5rem 1.25rem;
+            border-radius: 12px;
             border-left: 4px solid var(--accent-orange);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .kpi-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
         }
 
         .kpi-label {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--gray-600);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+            font-weight: 500;
         }
 
         .kpi-value {
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             font-weight: 600;
             color: var(--primary-blue);
+            line-height: 1.2;
+        }
+
+        .kpi-section {
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            background: var(--gray-50);
+            border-radius: 16px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .kpi-section-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .kpi-section-title {
+            color: var(--primary-blue);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-section-description {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
 
         @media (max-width: 768px) {
@@ -468,6 +509,228 @@
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .kpi-item {
+                min-height: auto;
+                padding: 1.25rem 1rem;
+            }
+
+            .kpi-section {
+                margin-bottom: 2rem;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .kpi-section-title {
+                font-size: 1.2rem;
+            }
+
+            .kpi-label {
+                font-size: 0.9rem;
+            }
+
+            .kpi-value {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Help Section Styles */
+        .help-section {
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .help-section-header {
+            background: var(--light-blue);
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gray-200);
+            transition: background-color 0.3s ease;
+        }
+
+        .help-section-header:hover {
+            background: var(--gray-100);
+        }
+
+        .help-section-header h4 {
+            color: var(--primary-blue);
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .help-toggle {
+            font-size: 1.2rem;
+            color: var(--gray-600);
+            transition: transform 0.3s ease;
+        }
+
+        .help-section-content {
+            padding: 1.5rem;
+            display: none;
+            line-height: 1.6;
+        }
+
+        .help-section-content.expanded {
+            display: block;
+        }
+
+        .help-section-header.expanded .help-toggle {
+            transform: rotate(180deg);
+        }
+
+        .help-step {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-orange);
+        }
+
+        .help-step h5 {
+            color: var(--primary-blue);
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .help-step p {
+            margin-bottom: 0.75rem;
+            color: var(--gray-700);
+        }
+
+        .help-step ul {
+            margin-left: 1.5rem;
+            color: var(--gray-700);
+        }
+
+        .help-step li {
+            margin-bottom: 0.5rem;
+        }
+
+        .help-subsection {
+            margin-bottom: 2rem;
+        }
+
+        .help-subsection h5 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: 0.5rem;
+        }
+
+        .help-subsection h6 {
+            color: var(--secondary-blue);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .help-subsection ul {
+            margin-left: 1.5rem;
+        }
+
+        .help-subsection li {
+            margin-bottom: 0.5rem;
+            color: var(--gray-700);
+        }
+
+        .complexity-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .complexity-example {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .formula-box {
+            background: var(--light-blue);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary-blue);
+        }
+
+        .formula-box p {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--primary-blue);
+        }
+
+        .troubleshoot-item {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: 8px;
+            border-left: 4px solid var(--warning-orange);
+        }
+
+        .troubleshoot-item h6 {
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .troubleshoot-item p {
+            color: var(--gray-700);
+            margin: 0;
+        }
+
+        /* Tooltip Styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: var(--gray-800);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--gray-800) transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
@@ -498,6 +761,7 @@
         <button class="nav-tab" onclick="showTab('kpis', this)">⚙️ KPIs</button>
         <button class="nav-tab" onclick="showTab('results', this)">📈 Results</button>
         <button class="nav-tab" onclick="showTab('reports', this)">📄 Reports</button>
+        <button class="nav-tab" onclick="showTab('help', this)">❓ Help</button>
     </nav>
 
     <div class="container">
@@ -975,7 +1239,22 @@
                     <h3 class="section-title">Key Performance Indicators</h3>
                     <button class="btn btn-primary" onclick="resetKPIs()">Reset to Defaults</button>
                 </div>
-                <div class="kpi-grid" id="kpiGrid"></div>
+                
+                <div class="kpi-section">
+                    <div class="kpi-section-header">
+                        <h4 class="kpi-section-title">Global KPIs</h4>
+                        <p class="kpi-section-description">These KPIs apply to all project complexities and define base rates and factors.</p>
+                    </div>
+                    <div class="kpi-grid" id="globalKPIGrid"></div>
+                </div>
+
+                <div class="kpi-section">
+                    <div class="kpi-section-header">
+                        <h4 class="kpi-section-title">Complexity-Specific KPIs</h4>
+                        <p class="kpi-section-description">Each complexity level has specific productivity and quality factors that reflect the effort required.</p>
+                    </div>
+                    <div id="complexityKPIGrid"></div>
+                </div>
             </div>
         </div>
 
@@ -1272,6 +1551,285 @@
                     </div>
                 </div>
                 <button class="btn btn-primary" onclick="generateReport()">📄 Generate Report</button>
+            </div>
+        </div>
+
+        <!-- Help Tab -->
+        <div id="help" class="tab-content">
+            <div class="card">
+                <div class="section-header">
+                    <h3 class="section-title">E&I Manpower Estimator - User Manual</h3>
+                    <div>
+                        <button class="btn btn-secondary" onclick="expandAllHelpSections()">Expand All</button>
+                        <button class="btn btn-secondary" onclick="collapseAllHelpSections()">Collapse All</button>
+                    </div>
+                </div>
+
+                <!-- Quick Start Guide -->
+                <div class="help-section">
+                    <div class="help-section-header" onclick="toggleHelpSection('quickStart')">
+                        <h4>🚀 Quick Start Guide</h4>
+                        <span class="help-toggle">▼</span>
+                    </div>
+                    <div id="quickStart" class="help-section-content">
+                        <div class="help-step">
+                            <h5>Step 1: Define Your Project Modules</h5>
+                            <p>Navigate to the <strong>Modules</strong> tab and click "Add Module" to begin. Select the appropriate complexity level:</p>
+                            <ul>
+                                <li><strong>Highly Complex (H):</strong> Advanced systems with intricate design requirements</li>
+                                <li><strong>Complex (C):</strong> Standard industrial modules with moderate complexity</li>
+                                <li><strong>Moderate (M):</strong> Straightforward modules with minimal special requirements</li>
+                                <li><strong>Simple (S):</strong> Basic modules with standard configurations</li>
+                            </ul>
+                        </div>
+
+                        <div class="help-step">
+                            <h5>Step 2: Configure Module Parameters</h5>
+                            <p>For each module, specify:</p>
+                            <ul>
+                                <li><strong>Electrical Areas:</strong> Number of electrical zones or areas to be designed</li>
+                                <li><strong>Telecom Areas:</strong> Communication and data network zones</li>
+                                <li><strong>Instrumentation Areas:</strong> Control and monitoring system zones</li>
+                                <li><strong>Levels:</strong> Number of elevation levels for each system type</li>
+                                <li><strong>MTO (Material Take-Off):</strong> Additional items requiring engineering support</li>
+                            </ul>
+                        </div>
+
+                        <div class="help-step">
+                            <h5>Step 3: Select Deliverables</h5>
+                            <p>Go to the <strong>Deliverables</strong> tab to choose which project outputs are required. Each deliverable has a multiplier that affects the total manhour estimate.</p>
+                        </div>
+
+                        <div class="help-step">
+                            <h5>Step 4: Configure Staffing</h5>
+                            <p>Use the <strong>Personnel & Staffing</strong> tab to adjust team composition and experience levels to match your project requirements.</p>
+                        </div>
+
+                        <div class="help-step">
+                            <h5>Step 5: Review Results</h5>
+                            <p>Check the <strong>Dashboard</strong> and <strong>Results</strong> tabs to review your estimates and generate reports as needed.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modules Guide -->
+                <div class="help-section">
+                    <div class="help-section-header" onclick="toggleHelpSection('modulesGuide')">
+                        <h4>🏗️ Modules Configuration Guide</h4>
+                        <span class="help-toggle">▼</span>
+                    </div>
+                    <div id="modulesGuide" class="help-section-content">
+                        <div class="help-subsection">
+                            <h5>Understanding Module Complexity</h5>
+                            <div class="complexity-examples">
+                                <div class="complexity-example">
+                                    <h6>Highly Complex (H) - Examples:</h6>
+                                    <ul>
+                                        <li>Control rooms with advanced SCADA systems</li>
+                                        <li>Safety instrumented systems (SIS)</li>
+                                        <li>High-voltage electrical systems (&gt;15kV)</li>
+                                        <li>Modules with extensive automation and control integration</li>
+                                    </ul>
+                                </div>
+                                <div class="complexity-example">
+                                    <h6>Complex (C) - Examples:</h6>
+                                    <ul>
+                                        <li>Process modules with standard instrumentation</li>
+                                        <li>Medium-voltage electrical distribution</li>
+                                        <li>Standard automation and control systems</li>
+                                        <li>Telecom hubs and communication centers</li>
+                                    </ul>
+                                </div>
+                                <div class="complexity-example">
+                                    <h6>Moderate (M) - Examples:</h6>
+                                    <ul>
+                                        <li>Utility modules with basic controls</li>
+                                        <li>Low-voltage electrical systems</li>
+                                        <li>Simple instrumentation and monitoring</li>
+                                        <li>Standard communication systems</li>
+                                    </ul>
+                                </div>
+                                <div class="complexity-example">
+                                    <h6>Simple (S) - Examples:</h6>
+                                    <ul>
+                                        <li>Basic electrical distribution panels</li>
+                                        <li>Simple lighting and power systems</li>
+                                        <li>Minimal instrumentation requirements</li>
+                                        <li>Basic communication infrastructure</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="help-subsection">
+                            <h5>Best Practices for Module Definition</h5>
+                            <ul>
+                                <li><strong>Be Specific:</strong> Use custom type names to clearly identify modules</li>
+                                <li><strong>Consider Interfaces:</strong> Account for connections between modules</li>
+                                <li><strong>Review Scope:</strong> Ensure all electrical and instrumentation work is captured</li>
+                                <li><strong>Validate Quantities:</strong> Double-check area counts and level definitions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculation Methodology -->
+                <div class="help-section">
+                    <div class="help-section-header" onclick="toggleHelpSection('calculations')">
+                        <h4>🔢 Calculation Methodology</h4>
+                        <span class="help-toggle">▼</span>
+                    </div>
+                    <div id="calculations" class="help-section-content">
+                        <div class="help-subsection">
+                            <h5>Base Manhour Calculation</h5>
+                            <div class="formula-box">
+                                <p><strong>Base Hours = Base Rate × Areas × Levels × Quantity</strong></p>
+                                <p>Where base rates vary by complexity and system type (electrical, telecom, instrumentation)</p>
+                            </div>
+                        </div>
+
+                        <div class="help-subsection">
+                            <h5>Productivity Adjustments</h5>
+                            <div class="formula-box">
+                                <p><strong>Adjusted Hours = Base Hours ÷ Productivity Factor × Quality Factor</strong></p>
+                                <ul>
+                                    <li>Productivity Factor: Efficiency multiplier based on team experience</li>
+                                    <li>Quality Factor: Additional effort for quality requirements</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="help-subsection">
+                            <h5>Deliverable Multipliers</h5>
+                            <p>Selected deliverables add to the base estimate using percentage multipliers:</p>
+                            <div class="formula-box">
+                                <p><strong>Deliverable Hours = Base Hours × Deliverable Multiplier</strong></p>
+                            </div>
+                        </div>
+
+                        <div class="help-subsection">
+                            <h5>Parametric Adjustments</h5>
+                            <p>The parametric model applies additional factors for:</p>
+                            <ul>
+                                <li>Team experience and onboarding</li>
+                                <li>Leave rates and availability</li>
+                                <li>Documentation requirements</li>
+                                <li>Client interaction and reviews</li>
+                                <li>Project risk contingency</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPIs Guide -->
+                <div class="help-section">
+                    <div class="help-section-header" onclick="toggleHelpSection('kpisGuide')">
+                        <h4>⚙️ KPIs Configuration Guide</h4>
+                        <span class="help-toggle">▼</span>
+                    </div>
+                    <div id="kpisGuide" class="help-section-content">
+                        <div class="help-subsection">
+                            <h5>Global KPIs</h5>
+                            <ul>
+                                <li><strong>Hourly Rate:</strong> Base cost per engineering hour (₱850 default)</li>
+                                <li><strong>Overhead Factor:</strong> Multiplier for indirect costs (1.25 default)</li>
+                                <li><strong>Working Days/Month:</strong> Available working days (22 default)</li>
+                            </ul>
+                        </div>
+
+                        <div class="help-subsection">
+                            <h5>Complexity-Specific KPIs</h5>
+                            <ul>
+                                <li><strong>Detailing Rate:</strong> Engineering hours produced per day</li>
+                                <li><strong>Checking Rate:</strong> Hours of work that can be reviewed per day</li>
+                                <li><strong>Productivity Factor:</strong> Team efficiency multiplier</li>
+                                <li><strong>Quality Factor:</strong> Additional effort for quality requirements</li>
+                                <li><strong>Review Cycles:</strong> Number of review iterations required</li>
+                            </ul>
+                        </div>
+
+                        <div class="help-subsection">
+                            <h5>Adjusting KPIs for Your Organization</h5>
+                            <ul>
+                                <li>Review historical project data to calibrate rates</li>
+                                <li>Consider regional cost differences</li>
+                                <li>Account for tool and software productivity gains</li>
+                                <li>Adjust for client-specific quality requirements</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips and Best Practices -->
+                <div class="help-section">
+                    <div class="help-section-header" onclick="toggleHelpSection('bestPractices')">
+                        <h4>💡 Tips and Best Practices</h4>
+                        <span class="help-toggle">▼</span>
+                    </div>
+                    <div id="bestPractices" class="help-section-content">
+                        <div class="help-subsection">
+                            <h5>Accurate Estimation Tips</h5>
+                            <ul>
+                                <li><strong>Start with scope clarity:</strong> Ensure all stakeholders understand what's included</li>
+                                <li><strong>Break down complex modules:</strong> Separate highly complex areas from simpler ones</li>
+                                <li><strong>Consider project phase:</strong> FEED studies require different effort than detailed design</li>
+                                <li><strong>Account for revisions:</strong> Include realistic estimates for design iterations</li>
+                                <li><strong>Plan for coordination:</strong> Multi-discipline projects need additional coordination time</li>
+                            </ul>
+                        </div>
+
+                        <div class="help-subsection">
+                            <h5>Common Pitfalls to Avoid</h5>
+                            <ul>
+                                <li>Underestimating client review and approval time</li>
+                                <li>Not accounting for design standard variations</li>
+                                <li>Overlooking commissioning support requirements</li>
+                                <li>Insufficient contingency for scope changes</li>
+                                <li>Not considering resource availability constraints</li>
+                            </ul>
+                        </div>
+
+                        <div class="help-subsection">
+                            <h5>Quality Assurance</h5>
+                            <ul>
+                                <li>Cross-check estimates with historical similar projects</li>
+                                <li>Have estimates reviewed by experienced personnel</li>
+                                <li>Validate assumptions with the client early</li>
+                                <li>Document basis of estimate for future reference</li>
+                                <li>Regular update estimates as scope becomes clearer</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Troubleshooting -->
+                <div class="help-section">
+                    <div class="help-section-header" onclick="toggleHelpSection('troubleshooting')">
+                        <h4>🔧 Troubleshooting</h4>
+                        <span class="help-toggle">▼</span>
+                    </div>
+                    <div id="troubleshooting" class="help-section-content">
+                        <div class="help-subsection">
+                            <h5>Common Issues and Solutions</h5>
+                            <div class="troubleshoot-item">
+                                <h6>Results seem too high/low</h6>
+                                <p>Check KPI values, especially productivity factors and base rates. Verify module complexity assignments are appropriate.</p>
+                            </div>
+                            <div class="troubleshoot-item">
+                                <h6>Cannot see all modules in results</h6>
+                                <p>Ensure all required fields are filled and modules have non-zero areas or quantities.</p>
+                            </div>
+                            <div class="troubleshoot-item">
+                                <h6>Export/import not working</h6>
+                                <p>Check browser permissions for file downloads. Ensure JSON files are properly formatted for import.</p>
+                            </div>
+                            <div class="troubleshoot-item">
+                                <h6>Personnel calculations inconsistent</h6>
+                                <p>Verify timeline settings and personnel role configurations are properly aligned.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2399,6 +2957,8 @@
                 renderKPIs();
             } else if (tabId === 'parametric') {
                 initializeParametricModel();
+            } else if (tabId === 'help') {
+                initializeHelpSection();
             }
         }
 
@@ -2657,19 +3217,20 @@
 
         // KPI Management
         function renderKPIs() {
-            const kpiGrid = document.getElementById('kpiGrid');
-            kpiGrid.innerHTML = '';
+            const globalKPIGrid = document.getElementById('globalKPIGrid');
+            const complexityKPIGrid = document.getElementById('complexityKPIGrid');
+            
+            if (!globalKPIGrid || !complexityKPIGrid) return;
+            
+            globalKPIGrid.innerHTML = '';
+            complexityKPIGrid.innerHTML = '';
 
             // Initialize KPIs if empty or old format
             if (Object.keys(appState.kpis).length === 0 || !appState.kpis.global) {
                 appState.kpis = JSON.parse(JSON.stringify(defaultKPIs));
             }
 
-            // Render Global KPIs first
-            const globalSection = document.createElement('div');
-            globalSection.innerHTML = '<h4 style="color: var(--primary-blue); margin-bottom: 1rem;">Global KPIs (Applied to All Complexities)</h4>';
-            kpiGrid.appendChild(globalSection);
-
+            // Render Global KPIs
             Object.keys(appState.kpis.global).forEach(kpiKey => {
                 const kpi = appState.kpis.global[kpiKey];
                 const kpiItem = document.createElement('div');
@@ -2685,18 +3246,34 @@
                         </div>
                     </div>
                 `;
-                kpiGrid.appendChild(kpiItem);
+                globalKPIGrid.appendChild(kpiItem);
             });
 
             // Render KPIs by complexity
-            const complexityTypes = ['Highly Complex (H)', 'Complex (C)', 'Moderate (M)', 'Simple (S)'];
+            const complexityTypes = [
+                { key: 'Highly Complex (H)', name: 'Highly Complex (H)', color: 'var(--error-red)' },
+                { key: 'Complex (C)', name: 'Complex (C)', color: 'var(--warning-orange)' },
+                { key: 'Moderate (M)', name: 'Moderate (M)', color: 'var(--accent-orange)' },
+                { key: 'Simple (S)', name: 'Simple (S)', color: 'var(--success-green)' }
+            ];
+
             complexityTypes.forEach(complexity => {
                 const complexitySection = document.createElement('div');
-                complexitySection.innerHTML = `<h4 style="color: var(--primary-blue); margin: 2rem 0 1rem 0; border-top: 2px solid var(--gray-200); padding-top: 1rem;">${complexity} KPIs</h4>`;
-                kpiGrid.appendChild(complexitySection);
+                complexitySection.className = 'kpi-section';
+                complexitySection.style.borderLeft = `4px solid ${complexity.color}`;
+                
+                const sectionHeader = document.createElement('div');
+                sectionHeader.className = 'kpi-section-header';
+                sectionHeader.innerHTML = `
+                    <h4 class="kpi-section-title">${complexity.name} KPIs</h4>
+                    <p class="kpi-section-description">Productivity and quality factors for ${complexity.name.toLowerCase()} modules</p>
+                `;
+                
+                const kpiGrid = document.createElement('div');
+                kpiGrid.className = 'kpi-grid';
 
-                Object.keys(appState.kpis[complexity]).forEach(kpiKey => {
-                    const kpi = appState.kpis[complexity][kpiKey];
+                Object.keys(appState.kpis[complexity.key]).forEach(kpiKey => {
+                    const kpi = appState.kpis[complexity.key][kpiKey];
                     const kpiItem = document.createElement('div');
                     kpiItem.className = 'kpi-item';
                     kpiItem.innerHTML = `
@@ -2705,13 +3282,17 @@
                             <div style="display: flex; align-items: center;">
                                 <input type="number" class="form-input" style="flex-grow: 1;" 
                                        value="${kpi.value}" step="0.01"
-                                       onchange="updateKPI('${complexity}', '${kpiKey}', parseFloat(this.value))">
+                                       onchange="updateKPI('${complexity.key}', '${kpiKey}', parseFloat(this.value))">
                                 <span style="margin-left: 8px; color: var(--gray-600);">${kpi.unit}</span>
                             </div>
                         </div>
                     `;
                     kpiGrid.appendChild(kpiItem);
                 });
+
+                complexitySection.appendChild(sectionHeader);
+                complexitySection.appendChild(kpiGrid);
+                complexityKPIGrid.appendChild(complexitySection);
             });
         }
 
@@ -3569,6 +4150,76 @@
 
         // Initialize the application when the page loads
         window.addEventListener('DOMContentLoaded', initApp);
+
+        // Help Section Functions
+        function initializeHelpSection() {
+            // Initialize help section - can be extended for dynamic content loading
+        }
+
+        function toggleHelpSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const header = section.previousElementSibling;
+            
+            if (section.classList.contains('expanded')) {
+                section.classList.remove('expanded');
+                header.classList.remove('expanded');
+            } else {
+                section.classList.add('expanded');
+                header.classList.add('expanded');
+            }
+        }
+
+        function expandAllHelpSections() {
+            const helpSections = document.querySelectorAll('.help-section-content');
+            const helpHeaders = document.querySelectorAll('.help-section-header');
+            
+            helpSections.forEach(section => section.classList.add('expanded'));
+            helpHeaders.forEach(header => header.classList.add('expanded'));
+        }
+
+        function collapseAllHelpSections() {
+            const helpSections = document.querySelectorAll('.help-section-content');
+            const helpHeaders = document.querySelectorAll('.help-section-header');
+            
+            helpSections.forEach(section => section.classList.remove('expanded'));
+            helpHeaders.forEach(header => header.classList.remove('expanded'));
+        }
+
+        // Add tooltip functionality
+        function addTooltip(element, text) {
+            element.classList.add('tooltip');
+            const tooltipText = document.createElement('span');
+            tooltipText.className = 'tooltiptext';
+            tooltipText.textContent = text;
+            element.appendChild(tooltipText);
+        }
+
+        // Initialize tooltips for key elements
+        function initializeTooltips() {
+            // Add tooltips to key form elements
+            const tooltipMappings = [
+                { selector: 'input[onchange*="updateModule"]', text: 'This affects the manhour calculation for this module' },
+                { selector: 'select[onchange*="updateKPI"]', text: 'Adjusting this KPI will recalculate all estimates' },
+                { selector: '.complexity-badge', text: 'Module complexity determines base effort rates' },
+                { selector: '.metric-value', text: 'Live calculation based on current module configuration' }
+            ];
+
+            tooltipMappings.forEach(mapping => {
+                const elements = document.querySelectorAll(mapping.selector);
+                elements.forEach(element => {
+                    if (!element.querySelector('.tooltiptext')) {
+                        addTooltip(element, mapping.text);
+                    }
+                });
+            });
+        }
+
+        // Initialize tooltips when tabs are shown
+        const originalShowTab = showTab;
+        showTab = function(tabId, tabElement) {
+            originalShowTab(tabId, tabElement);
+            setTimeout(initializeTooltips, 100);
+        };
     </script>
 </body>
 </html>

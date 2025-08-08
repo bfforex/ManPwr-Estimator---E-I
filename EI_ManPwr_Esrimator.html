@@ -492,6 +492,8 @@
         <button class="nav-tab active" onclick="showTab('dashboard', this)">📊 Dashboard</button>
         <button class="nav-tab" onclick="showTab('modules', this)">🏗️ Modules</button>
         <button class="nav-tab" onclick="showTab('deliverables', this)">📋 Deliverables</button>
+        <button class="nav-tab" onclick="showTab('personnel', this)">👥 Personnel & Staffing</button>
+        <button class="nav-tab" onclick="showTab('timeline', this)">📅 Project Timeline</button>
         <button class="nav-tab" onclick="showTab('parametric', this)">🔧 Parametric Model</button>
         <button class="nav-tab" onclick="showTab('kpis', this)">⚙️ KPIs</button>
         <button class="nav-tab" onclick="showTab('results', this)">📈 Results</button>
@@ -557,6 +559,412 @@
                     </div>
                 </div>
                 <div id="deliverablesList"></div>
+            </div>
+        </div>
+
+        <!-- Personnel & Staffing Tab -->
+        <div id="personnel" class="tab-content">
+            <div class="card">
+                <div class="section-header">
+                    <h3 class="section-title">Personnel Role Estimation</h3>
+                    <button class="btn btn-primary" onclick="resetPersonnelFactors()">Reset to Defaults</button>
+                </div>
+
+                <!-- Lead Engineer Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Lead Engineer Allocation</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableLeadEngineer" checked onchange="togglePersonnelSection('leadEngineer')"> 
+                            Include Lead Engineer
+                        </label>
+                    </div>
+                    <div class="form-grid" id="leadEngineerSection">
+                        <div class="form-group">
+                            <label class="form-label">Allocation Type</label>
+                            <select class="form-select" id="leadEngineerType" onchange="updatePersonnelCalculations()">
+                                <option value="fulltime">Full-time throughout project</option>
+                                <option value="parttime" selected>Part-time allocation</option>
+                                <option value="phases">Phase-based allocation</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Participation Percentage (%)</label>
+                            <input type="number" class="form-input" id="leadEngineerPercentage" value="50" min="10" max="100" step="5" onchange="updatePersonnelCalculations()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Hourly Rate Premium (%)</label>
+                            <input type="number" class="form-input" id="leadEngineerPremium" value="25" min="0" max="100" step="5" onchange="updatePersonnelCalculations()">
+                            <small style="color: var(--gray-600);">Additional rate above base engineering rate</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Electrical Engineers Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Electrical Engineers</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableElectricalEngineers" checked onchange="togglePersonnelSection('electricalEngineers')"> 
+                            Include Electrical Engineers
+                        </label>
+                    </div>
+                    <div class="form-grid" id="electricalEngineersSection">
+                        <div class="form-group">
+                            <label class="form-label">Experience Level Distribution</label>
+                            <select class="form-select" id="electricalEngineerLevel" onchange="updatePersonnelCalculations()">
+                                <option value="junior">Mostly Junior (0-3 years)</option>
+                                <option value="mixed" selected>Mixed Experience (Jr/Sr)</option>
+                                <option value="senior">Mostly Senior (5+ years)</option>
+                                <option value="expert">Expert Level (10+ years)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Productivity Factor</label>
+                            <input type="number" class="form-input" id="electricalEngineerProductivity" value="1.0" min="0.5" max="1.5" step="0.05" onchange="updatePersonnelCalculations()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Responsibility Scope</label>
+                            <select class="form-select" id="electricalEngineerScope" onchange="updatePersonnelCalculations()">
+                                <option value="design">Design Only</option>
+                                <option value="design_check" selected>Design + Checking</option>
+                                <option value="full">Full Project Responsibility</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instrument Engineers Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Instrument Engineers</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableInstrumentEngineers" checked onchange="togglePersonnelSection('instrumentEngineers')"> 
+                            Include Instrument Engineers
+                        </label>
+                    </div>
+                    <div class="form-grid" id="instrumentEngineersSection">
+                        <div class="form-group">
+                            <label class="form-label">Experience Level Distribution</label>
+                            <select class="form-select" id="instrumentEngineerLevel" onchange="updatePersonnelCalculations()">
+                                <option value="junior">Mostly Junior (0-3 years)</option>
+                                <option value="mixed" selected>Mixed Experience (Jr/Sr)</option>
+                                <option value="senior">Mostly Senior (5+ years)</option>
+                                <option value="expert">Expert Level (10+ years)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Productivity Factor</label>
+                            <input type="number" class="form-input" id="instrumentEngineerProductivity" value="1.0" min="0.5" max="1.5" step="0.05" onchange="updatePersonnelCalculations()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Responsibility Scope</label>
+                            <select class="form-select" id="instrumentEngineerScope" onchange="updatePersonnelCalculations()">
+                                <option value="design">Design Only</option>
+                                <option value="design_check" selected>Design + Checking</option>
+                                <option value="full">Full Project Responsibility</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Electrical Detailers Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Electrical Detailers</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableElectricalDetailers" checked onchange="togglePersonnelSection('electricalDetailers')"> 
+                            Include Electrical Detailers
+                        </label>
+                    </div>
+                    <div class="form-grid" id="electricalDetailersSection">
+                        <div class="form-group">
+                            <label class="form-label">Detailing Rate (Hours/Day)</label>
+                            <input type="number" class="form-input" id="electricalDetailerRate" value="7" min="4" max="12" step="0.5" onchange="updatePersonnelCalculations()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Experience Level</label>
+                            <select class="form-select" id="electricalDetailerLevel" onchange="updatePersonnelCalculations()">
+                                <option value="trainee">Trainee (Learning)</option>
+                                <option value="junior">Junior (1-2 years)</option>
+                                <option value="standard" selected>Standard (3-5 years)</option>
+                                <option value="senior">Senior (5+ years)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CAD Software Proficiency</label>
+                            <select class="form-select" id="electricalDetailerCAD" onchange="updatePersonnelCalculations()">
+                                <option value="basic">Basic AutoCAD</option>
+                                <option value="advanced" selected>Advanced CAD + Tools</option>
+                                <option value="expert">Expert Level + 3D</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instrument Detailers Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Instrument Detailers</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableInstrumentDetailers" checked onchange="togglePersonnelSection('instrumentDetailers')"> 
+                            Include Instrument Detailers
+                        </label>
+                    </div>
+                    <div class="form-grid" id="instrumentDetailersSection">
+                        <div class="form-group">
+                            <label class="form-label">Detailing Rate (Hours/Day)</label>
+                            <input type="number" class="form-input" id="instrumentDetailerRate" value="6" min="4" max="12" step="0.5" onchange="updatePersonnelCalculations()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Experience Level</label>
+                            <select class="form-select" id="instrumentDetailerLevel" onchange="updatePersonnelCalculations()">
+                                <option value="trainee">Trainee (Learning)</option>
+                                <option value="junior">Junior (1-2 years)</option>
+                                <option value="standard" selected>Standard (3-5 years)</option>
+                                <option value="senior">Senior (5+ years)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Specialization</label>
+                            <select class="form-select" id="instrumentDetailerSpecialization" onchange="updatePersonnelCalculations()">
+                                <option value="general" selected>General Instrumentation</option>
+                                <option value="control">Control Systems Focus</option>
+                                <option value="safety">Safety Systems Focus</option>
+                                <option value="advanced">Advanced Systems</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3D Modelers Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">3D Modelers</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enable3DModelers" checked onchange="togglePersonnelSection('3DModelers')"> 
+                            Include 3D Modelers
+                        </label>
+                    </div>
+                    <div class="form-grid" id="3DModelersSection">
+                        <div class="form-group">
+                            <label class="form-label">Modeling Software</label>
+                            <select class="form-select" id="modelerSoftware" onchange="updatePersonnelCalculations()">
+                                <option value="autocad3d">AutoCAD 3D</option>
+                                <option value="inventor" selected>Autodesk Inventor</option>
+                                <option value="solidworks">SolidWorks</option>
+                                <option value="pdms">PDMS/E3D</option>
+                                <option value="other">Other 3D Platform</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Modeling Rate (Hours/Day)</label>
+                            <input type="number" class="form-input" id="modelerRate" value="6" min="4" max="10" step="0.5" onchange="updatePersonnelCalculations()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Model Complexity Adjustment</label>
+                            <select class="form-select" id="modelerComplexity" onchange="updatePersonnelCalculations()">
+                                <option value="simple">Simple Layouts</option>
+                                <option value="standard" selected>Standard Complexity</option>
+                                <option value="complex">Complex Assemblies</option>
+                                <option value="highly_complex">Highly Complex 3D</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staffing Summary -->
+                <div class="card" style="background: var(--gray-50); border: 2px solid var(--primary-blue);">
+                    <h4 style="color: var(--primary-blue); margin-bottom: 1rem;">Personnel Staffing Summary</h4>
+                    <div class="kpi-grid" id="personnelSummary">
+                        <div class="kpi-item">
+                            <div class="kpi-label">Lead Engineers</div>
+                            <div class="kpi-value" id="leadEngineerCount">0.5 FTE</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Electrical Engineers</div>
+                            <div class="kpi-value" id="electricalEngineerCount">0 FTE</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Instrument Engineers</div>
+                            <div class="kpi-value" id="instrumentEngineerCount">0 FTE</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Electrical Detailers</div>
+                            <div class="kpi-value" id="electricalDetailerCount">0 FTE</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Instrument Detailers</div>
+                            <div class="kpi-value" id="instrumentDetailerCount">0 FTE</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">3D Modelers</div>
+                            <div class="kpi-value" id="modelerCount">0 FTE</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Total Team Size</div>
+                            <div class="kpi-value" id="totalTeamSize">0.5 FTE</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Peak Headcount</div>
+                            <div class="kpi-value" id="peakHeadcount">1 People</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Timeline Tab -->
+        <div id="timeline" class="tab-content">
+            <div class="card">
+                <div class="section-header">
+                    <h3 class="section-title">Project Timeline Controls</h3>
+                    <button class="btn btn-primary" onclick="resetTimelineSettings()">Reset to Defaults</button>
+                </div>
+
+                <!-- Project Duration Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Overall Project Timeline</h4>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Total Project Duration (months)</label>
+                            <input type="number" class="form-input" id="totalProjectDuration" value="12" min="1" max="60" step="0.5" onchange="updateTimelineCalculations()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Engineering Phase Duration (months)</label>
+                            <input type="number" class="form-input" id="engineeringDuration" value="8" min="1" max="48" step="0.5" onchange="updateTimelineCalculations()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Construction Support Duration (months)</label>
+                            <input type="number" class="form-input" id="constructionSupportDuration" value="4" min="0" max="24" step="0.5" onchange="updateTimelineCalculations()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Module Scheduling Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Module Scheduling & Sequencing</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableModuleSequencing" checked onchange="toggleTimelineFeature('moduleSequencing')"> 
+                            Enable Module Sequencing
+                        </label>
+                    </div>
+                    <div class="form-grid" id="moduleSequencingSection">
+                        <div class="form-group">
+                            <label class="form-label">Module Execution Strategy</label>
+                            <select class="form-select" id="moduleStrategy" onchange="updateTimelineCalculations()">
+                                <option value="sequential">Sequential (One after another)</option>
+                                <option value="parallel" selected>Parallel (Simultaneous)</option>
+                                <option value="phased">Phased (Groups of modules)</option>
+                                <option value="overlapping">Overlapping (Staggered start)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Overlap Percentage (%)</label>
+                            <input type="number" class="form-input" id="overlapPercentage" value="30" min="0" max="80" step="5" onchange="updateTimelineCalculations()">
+                            <small style="color: var(--gray-600);">How much modules overlap in timeline</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Engineering Works Duration per Module (weeks)</label>
+                            <input type="number" class="form-input" id="moduleEngineeringDuration" value="6" min="1" max="24" step="0.5" onchange="updateTimelineCalculations()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resource Loading Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Resource Loading & Allocation</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enableResourceLoading" checked onchange="toggleTimelineFeature('resourceLoading')"> 
+                            Enable Resource Loading
+                        </label>
+                    </div>
+                    <div class="form-grid" id="resourceLoadingSection">
+                        <div class="form-group">
+                            <label class="form-label">Peak Resource Utilization (%)</label>
+                            <input type="number" class="form-input" id="peakUtilization" value="85" min="50" max="100" step="5" onchange="updateTimelineCalculations()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Resource Ramp-up Duration (weeks)</label>
+                            <input type="number" class="form-input" id="rampUpDuration" value="2" min="0" max="8" step="0.5" onchange="updateTimelineCalculations()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Resource Ramp-down Duration (weeks)</label>
+                            <input type="number" class="form-input" id="rampDownDuration" value="1" min="0" max="6" step="0.5" onchange="updateTimelineCalculations()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post-Construction Support Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="section-title">Post-Construction Support</h4>
+                        <label class="form-label">
+                            <input type="checkbox" id="enablePostConstruction" checked onchange="toggleTimelineFeature('postConstruction')"> 
+                            Include Post-Construction Work
+                        </label>
+                    </div>
+                    <div class="form-grid" id="postConstructionSection">
+                        <div class="form-group">
+                            <label class="form-label">As-Built Documentation Effort</label>
+                            <select class="form-select" id="asBuiltEffort" onchange="updateTimelineCalculations()">
+                                <option value="5">Minimal (5% of engineering hours)</option>
+                                <option value="10" selected>Standard (10% of engineering hours)</option>
+                                <option value="15">Comprehensive (15% of engineering hours)</option>
+                                <option value="20">Detailed (20% of engineering hours)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Handover Documentation</label>
+                            <select class="form-select" id="handoverWork" onchange="updateTimelineCalculations()">
+                                <option value="2">Basic Handover (2% of engineering hours)</option>
+                                <option value="5" selected>Standard Handover (5% of engineering hours)</option>
+                                <option value="8">Detailed Handover (8% of engineering hours)</option>
+                                <option value="12">Comprehensive Handover (12% of engineering hours)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Post-Construction Team Size (%)</label>
+                            <input type="number" class="form-input" id="postConstructionTeamSize" value="25" min="10" max="75" step="5" onchange="updateTimelineCalculations()">
+                            <small style="color: var(--gray-600);">Percentage of engineering team for post-construction</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Summary -->
+                <div class="card" style="background: var(--gray-50); border: 2px solid var(--primary-blue);">
+                    <h4 style="color: var(--primary-blue); margin-bottom: 1rem;">Timeline Summary</h4>
+                    <div class="kpi-grid" id="timelineSummary">
+                        <div class="kpi-item">
+                            <div class="kpi-label">Total Project Duration</div>
+                            <div class="kpi-value" id="totalDurationDisplay">12.0 months</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Engineering Duration</div>
+                            <div class="kpi-value" id="engineeringDurationDisplay">8.0 months</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Module Overlap Factor</div>
+                            <div class="kpi-value" id="overlapFactorDisplay">30%</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Peak Team Size</div>
+                            <div class="kpi-value" id="peakTeamSizeDisplay">0 people</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Post-Construction Hours</div>
+                            <div class="kpi-value" id="postConstructionHours">0 hours</div>
+                        </div>
+                        <div class="kpi-item">
+                            <div class="kpi-label">Critical Path Duration</div>
+                            <div class="kpi-value" id="criticalPathDuration">8.0 months</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -881,6 +1289,73 @@
             deliverables: [],
             kpis: {},
             results: {},
+            personnel: {
+                enabled: {
+                    leadEngineer: true,
+                    electricalEngineers: true,
+                    instrumentEngineers: true,
+                    electricalDetailers: true,
+                    instrumentDetailers: true,
+                    '3DModelers': true
+                },
+                leadEngineer: {
+                    type: 'parttime',
+                    percentage: 50,
+                    premium: 25
+                },
+                electricalEngineers: {
+                    level: 'mixed',
+                    productivity: 1.0,
+                    scope: 'design_check'
+                },
+                instrumentEngineers: {
+                    level: 'mixed',
+                    productivity: 1.0,
+                    scope: 'design_check'
+                },
+                electricalDetailers: {
+                    rate: 7,
+                    level: 'standard',
+                    cad: 'advanced'
+                },
+                instrumentDetailers: {
+                    rate: 6,
+                    level: 'standard',
+                    specialization: 'general'
+                },
+                '3DModelers': {
+                    software: 'inventor',
+                    rate: 6,
+                    complexity: 'standard'
+                }
+            },
+            timeline: {
+                enabled: {
+                    moduleSequencing: true,
+                    resourceLoading: true,
+                    postConstruction: true
+                },
+                project: {
+                    totalDuration: 12,
+                    engineeringDuration: 8,
+                    constructionSupportDuration: 4
+                },
+                moduleScheduling: {
+                    strategy: 'parallel',
+                    overlapPercentage: 30,
+                    moduleEngineeringDuration: 6
+                },
+                resourceLoading: {
+                    peakUtilization: 85,
+                    rampUpDuration: 2,
+                    rampDownDuration: 1
+                },
+                postConstruction: {
+                    asBuiltEffort: 10,
+                    handoverWork: 5,
+                    teamSizePercentage: 25
+                }
+            },
             parametricModel: {
                 enabled: {
                     productivity: true,
@@ -986,6 +1461,8 @@
             renderModules();
             renderDeliverables();
             renderKPIs();
+            initializePersonnelSettings();
+            initializeTimelineSettings();
             initializeParametricModel();
             calculateResults();
             updateDashboard();
@@ -994,6 +1471,420 @@
             if (appState.modules.length === 0) {
                 showNotification('Welcome! Click "Add Module" to start your estimate.', 'success');
             }
+        }
+
+        // Personnel & Staffing Functions
+        function initializePersonnelSettings() {
+            if (appState.personnel) {
+                updatePersonnelFormValues();
+                updatePersonnelCalculations();
+            }
+        }
+
+        function updatePersonnelFormValues() {
+            const personnel = appState.personnel;
+            if (!personnel) return;
+            
+            // Lead Engineer section
+            const enableLeadEngineer = document.getElementById('enableLeadEngineer');
+            if (enableLeadEngineer) enableLeadEngineer.checked = personnel.enabled.leadEngineer;
+            
+            const leadEngineerType = document.getElementById('leadEngineerType');
+            if (leadEngineerType) leadEngineerType.value = personnel.leadEngineer.type;
+            
+            const leadEngineerPercentage = document.getElementById('leadEngineerPercentage');
+            if (leadEngineerPercentage) leadEngineerPercentage.value = personnel.leadEngineer.percentage;
+            
+            const leadEngineerPremium = document.getElementById('leadEngineerPremium');
+            if (leadEngineerPremium) leadEngineerPremium.value = personnel.leadEngineer.premium;
+            
+            // Electrical Engineers section
+            const enableElectricalEngineers = document.getElementById('enableElectricalEngineers');
+            if (enableElectricalEngineers) enableElectricalEngineers.checked = personnel.enabled.electricalEngineers;
+            
+            const electricalEngineerLevel = document.getElementById('electricalEngineerLevel');
+            if (electricalEngineerLevel) electricalEngineerLevel.value = personnel.electricalEngineers.level;
+            
+            const electricalEngineerProductivity = document.getElementById('electricalEngineerProductivity');
+            if (electricalEngineerProductivity) electricalEngineerProductivity.value = personnel.electricalEngineers.productivity;
+            
+            const electricalEngineerScope = document.getElementById('electricalEngineerScope');
+            if (electricalEngineerScope) electricalEngineerScope.value = personnel.electricalEngineers.scope;
+            
+            // Similar pattern for other personnel types...
+            togglePersonnelSection('leadEngineer');
+            togglePersonnelSection('electricalEngineers');
+            togglePersonnelSection('instrumentEngineers');
+            togglePersonnelSection('electricalDetailers');
+            togglePersonnelSection('instrumentDetailers');
+            togglePersonnelSection('3DModelers');
+        }
+
+        function togglePersonnelSection(section) {
+            const enableCheckbox = document.getElementById(`enable${section.charAt(0).toUpperCase() + section.slice(1)}`);
+            if (!enableCheckbox) return;
+            
+            const enabled = enableCheckbox.checked;
+            appState.personnel.enabled[section] = enabled;
+            
+            const sectionElement = document.getElementById(`${section}Section`);
+            if (sectionElement) {
+                sectionElement.style.opacity = enabled ? '1' : '0.5';
+                sectionElement.style.pointerEvents = enabled ? 'auto' : 'none';
+            }
+            
+            updatePersonnelCalculations();
+            saveToStorage();
+        }
+
+        function updatePersonnelCalculations() {
+            const personnel = appState.personnel;
+            if (!personnel) return;
+            
+            // Update personnel values from form inputs
+            const leadEngineerType = document.getElementById('leadEngineerType');
+            if (leadEngineerType) personnel.leadEngineer.type = leadEngineerType.value;
+            
+            const leadEngineerPercentage = document.getElementById('leadEngineerPercentage');
+            if (leadEngineerPercentage) personnel.leadEngineer.percentage = parseInt(leadEngineerPercentage.value) || 50;
+            
+            const leadEngineerPremium = document.getElementById('leadEngineerPremium');
+            if (leadEngineerPremium) personnel.leadEngineer.premium = parseInt(leadEngineerPremium.value) || 25;
+            
+            // Update other personnel values
+            const electricalEngineerLevel = document.getElementById('electricalEngineerLevel');
+            if (electricalEngineerLevel) personnel.electricalEngineers.level = electricalEngineerLevel.value;
+            
+            const electricalEngineerProductivity = document.getElementById('electricalEngineerProductivity');
+            if (electricalEngineerProductivity) personnel.electricalEngineers.productivity = parseFloat(electricalEngineerProductivity.value) || 1.0;
+            
+            const electricalDetailerRate = document.getElementById('electricalDetailerRate');
+            if (electricalDetailerRate) personnel.electricalDetailers.rate = parseFloat(electricalDetailerRate.value) || 7;
+            
+            const instrumentDetailerRate = document.getElementById('instrumentDetailerRate');
+            if (instrumentDetailerRate) personnel.instrumentDetailers.rate = parseFloat(instrumentDetailerRate.value) || 6;
+            
+            const modelerRate = document.getElementById('modelerRate');
+            if (modelerRate) personnel['3DModelers'].rate = parseFloat(modelerRate.value) || 6;
+            
+            // Calculate personnel requirements based on project scope
+            const results = calculatePersonnelRequirements();
+            
+            // Update display
+            document.getElementById('leadEngineerCount').textContent = results.leadEngineer.toFixed(1) + ' FTE';
+            document.getElementById('electricalEngineerCount').textContent = results.electricalEngineers.toFixed(1) + ' FTE';
+            document.getElementById('instrumentEngineerCount').textContent = results.instrumentEngineers.toFixed(1) + ' FTE';
+            document.getElementById('electricalDetailerCount').textContent = results.electricalDetailers.toFixed(1) + ' FTE';
+            document.getElementById('instrumentDetailerCount').textContent = results.instrumentDetailers.toFixed(1) + ' FTE';
+            document.getElementById('modelerCount').textContent = results.modelers.toFixed(1) + ' FTE';
+            document.getElementById('totalTeamSize').textContent = results.totalFTE.toFixed(1) + ' FTE';
+            document.getElementById('peakHeadcount').textContent = Math.ceil(results.totalFTE) + ' People';
+            
+            // Recalculate overall results
+            calculateResults();
+            saveToStorage();
+        }
+
+        function calculatePersonnelRequirements() {
+            const results = appState.results || {};
+            const totalManhours = results.totalManhours || 0;
+            const projectDuration = appState.timeline?.project?.engineeringDuration || 8; // months
+            const workingHoursPerMonth = (appState.kpis.working_days_month?.value || 22) * 8; // hours per month
+            const totalWorkingHours = projectDuration * workingHoursPerMonth;
+            
+            let personnelRequirements = {
+                leadEngineer: 0,
+                electricalEngineers: 0,
+                instrumentEngineers: 0,
+                electricalDetailers: 0,
+                instrumentDetailers: 0,
+                modelers: 0,
+                totalFTE: 0
+            };
+            
+            if (totalManhours === 0) return personnelRequirements;
+            
+            // Lead Engineer calculation
+            if (appState.personnel?.enabled?.leadEngineer) {
+                const percentage = (appState.personnel.leadEngineer.percentage || 50) / 100;
+                personnelRequirements.leadEngineer = percentage;
+            }
+            
+            // Calculate role distribution based on project manhours and system breakdown
+            const systemBreakdown = results.bySystem || { electrical: 0, telecom: 0, instrumentation: 0 };
+            const electricalHours = systemBreakdown.electrical || 0;
+            const instrumentationHours = systemBreakdown.instrumentation || 0;
+            const totalSystemHours = electricalHours + instrumentationHours + (systemBreakdown.telecom || 0);
+            
+            console.log('Personnel calculation debug:', {
+                totalManhours,
+                electricalHours,
+                instrumentationHours,
+                totalSystemHours,
+                projectDuration,
+                totalWorkingHours
+            });
+            
+            // Electrical Engineers (20% engineering, 80% detailing typically)
+            if (appState.personnel?.enabled?.electricalEngineers && electricalHours > 0) {
+                const scope = appState.personnel.electricalEngineers.scope || 'design_check';
+                const engineeringRatio = scope === 'design' ? 0.3 : 
+                                       scope === 'design_check' ? 0.2 : 0.15;
+                const engineeringHours = electricalHours * engineeringRatio;
+                personnelRequirements.electricalEngineers = engineeringHours / totalWorkingHours;
+            }
+            
+            // Instrument Engineers  
+            if (appState.personnel?.enabled?.instrumentEngineers && instrumentationHours > 0) {
+                const scope = appState.personnel.instrumentEngineers.scope || 'design_check';
+                const engineeringRatio = scope === 'design' ? 0.3 : 
+                                       scope === 'design_check' ? 0.2 : 0.15;
+                const engineeringHours = instrumentationHours * engineeringRatio;
+                personnelRequirements.instrumentEngineers = engineeringHours / totalWorkingHours;
+            }
+            
+            // Electrical Detailers
+            if (appState.personnel?.enabled?.electricalDetailers && electricalHours > 0) {
+                const detailingHours = electricalHours * 0.8; // 80% detailing work
+                const dailyRate = appState.personnel.electricalDetailers.rate || 7;
+                const requiredDays = detailingHours / dailyRate;
+                const availableDays = projectDuration * (appState.kpis.working_days_month?.value || 22);
+                personnelRequirements.electricalDetailers = requiredDays / availableDays;
+            }
+            
+            // Instrument Detailers
+            if (appState.personnel?.enabled?.instrumentDetailers && instrumentationHours > 0) {
+                const detailingHours = instrumentationHours * 0.8; // 80% detailing work
+                const dailyRate = appState.personnel.instrumentDetailers.rate || 6;
+                const requiredDays = detailingHours / dailyRate;
+                const availableDays = projectDuration * (appState.kpis.working_days_month?.value || 22);
+                personnelRequirements.instrumentDetailers = requiredDays / availableDays;
+            }
+            
+            // 3D Modelers (based on 3D modeling deliverable)
+            if (appState.personnel?.enabled?.['3DModelers']) {
+                const modelingDeliverable = appState.deliverables?.find(d => d.id === '3d_modeling');
+                if (modelingDeliverable && modelingDeliverable.selected) {
+                    const modelingHours = totalSystemHours * modelingDeliverable.multiplier;
+                    const dailyRate = appState.personnel['3DModelers'].rate || 6;
+                    const requiredDays = modelingHours / dailyRate;
+                    const availableDays = projectDuration * (appState.kpis.working_days_month?.value || 22);
+                    personnelRequirements.modelers = requiredDays / availableDays;
+                }
+            }
+            
+            // Calculate total FTE
+            personnelRequirements.totalFTE = personnelRequirements.leadEngineer + 
+                                            personnelRequirements.electricalEngineers + 
+                                            personnelRequirements.instrumentEngineers + 
+                                            personnelRequirements.electricalDetailers + 
+                                            personnelRequirements.instrumentDetailers + 
+                                            personnelRequirements.modelers;
+            
+            console.log('Personnel requirements calculated:', personnelRequirements);
+            return personnelRequirements;
+        }
+
+        function resetPersonnelFactors() {
+            appState.personnel = {
+                enabled: {
+                    leadEngineer: true,
+                    electricalEngineers: true,
+                    instrumentEngineers: true,
+                    electricalDetailers: true,
+                    instrumentDetailers: true,
+                    '3DModelers': true
+                },
+                leadEngineer: {
+                    type: 'parttime',
+                    percentage: 50,
+                    premium: 25
+                },
+                electricalEngineers: {
+                    level: 'mixed',
+                    productivity: 1.0,
+                    scope: 'design_check'
+                },
+                instrumentEngineers: {
+                    level: 'mixed',
+                    productivity: 1.0,
+                    scope: 'design_check'
+                },
+                electricalDetailers: {
+                    rate: 7,
+                    level: 'standard',
+                    cad: 'advanced'
+                },
+                instrumentDetailers: {
+                    rate: 6,
+                    level: 'standard',
+                    specialization: 'general'
+                },
+                '3DModelers': {
+                    software: 'inventor',
+                    rate: 6,
+                    complexity: 'standard'
+                }
+            };
+            
+            updatePersonnelFormValues();
+            updatePersonnelCalculations();
+            showNotification('Personnel settings reset to defaults', 'success');
+        }
+
+        // Timeline Functions
+        function initializeTimelineSettings() {
+            if (appState.timeline) {
+                updateTimelineFormValues();
+                updateTimelineCalculations();
+            }
+        }
+
+        function updateTimelineFormValues() {
+            const timeline = appState.timeline;
+            if (!timeline) return;
+            
+            // Project duration inputs
+            const totalProjectDuration = document.getElementById('totalProjectDuration');
+            if (totalProjectDuration) totalProjectDuration.value = timeline.project.totalDuration;
+            
+            const engineeringDuration = document.getElementById('engineeringDuration');
+            if (engineeringDuration) engineeringDuration.value = timeline.project.engineeringDuration;
+            
+            const constructionSupportDuration = document.getElementById('constructionSupportDuration');
+            if (constructionSupportDuration) constructionSupportDuration.value = timeline.project.constructionSupportDuration;
+            
+            // Module scheduling inputs
+            const moduleStrategy = document.getElementById('moduleStrategy');
+            if (moduleStrategy) moduleStrategy.value = timeline.moduleScheduling.strategy;
+            
+            const overlapPercentage = document.getElementById('overlapPercentage');
+            if (overlapPercentage) overlapPercentage.value = timeline.moduleScheduling.overlapPercentage;
+            
+            // Toggle sections
+            toggleTimelineFeature('moduleSequencing');
+            toggleTimelineFeature('resourceLoading');
+            toggleTimelineFeature('postConstruction');
+        }
+
+        function toggleTimelineFeature(feature) {
+            const enableCheckbox = document.getElementById(`enable${feature.charAt(0).toUpperCase() + feature.slice(1)}`);
+            if (!enableCheckbox) return;
+            
+            const enabled = enableCheckbox.checked;
+            appState.timeline.enabled[feature] = enabled;
+            
+            const sectionElement = document.getElementById(`${feature}Section`);
+            if (sectionElement) {
+                sectionElement.style.opacity = enabled ? '1' : '0.5';
+                sectionElement.style.pointerEvents = enabled ? 'auto' : 'none';
+            }
+            
+            updateTimelineCalculations();
+            saveToStorage();
+        }
+
+        function updateTimelineCalculations() {
+            const timeline = appState.timeline;
+            if (!timeline) return;
+            
+            // Update timeline values from form inputs
+            const totalProjectDuration = document.getElementById('totalProjectDuration');
+            if (totalProjectDuration) timeline.project.totalDuration = parseFloat(totalProjectDuration.value) || 12;
+            
+            const engineeringDuration = document.getElementById('engineeringDuration');
+            if (engineeringDuration) timeline.project.engineeringDuration = parseFloat(engineeringDuration.value) || 8;
+            
+            const overlapPercentage = document.getElementById('overlapPercentage');
+            if (overlapPercentage) timeline.moduleScheduling.overlapPercentage = parseInt(overlapPercentage.value) || 30;
+            
+            // Calculate timeline impacts
+            const timelineResults = calculateTimelineImpacts();
+            
+            // Update timeline display
+            document.getElementById('totalDurationDisplay').textContent = timeline.project.totalDuration.toFixed(1) + ' months';
+            document.getElementById('engineeringDurationDisplay').textContent = timeline.project.engineeringDuration.toFixed(1) + ' months';
+            document.getElementById('overlapFactorDisplay').textContent = timeline.moduleScheduling.overlapPercentage + '%';
+            document.getElementById('peakTeamSizeDisplay').textContent = Math.ceil(timelineResults.peakTeamSize) + ' people';
+            document.getElementById('postConstructionHours').textContent = Math.round(timelineResults.postConstructionHours).toLocaleString() + ' hours';
+            document.getElementById('criticalPathDuration').textContent = timelineResults.criticalPath.toFixed(1) + ' months';
+            
+            // Recalculate personnel and overall results
+            updatePersonnelCalculations();
+            calculateResults();
+            saveToStorage();
+        }
+
+        function calculateTimelineImpacts() {
+            const results = appState.results || {};
+            const totalManhours = results.totalManhours || 0;
+            const timeline = appState.timeline;
+            
+            let timelineResults = {
+                peakTeamSize: 0,
+                postConstructionHours: 0,
+                criticalPath: timeline.project.engineeringDuration || 8,
+                effectiveDuration: timeline.project.engineeringDuration || 8
+            };
+            
+            // Calculate post-construction support hours
+            if (timeline.enabled.postConstruction && totalManhours > 0) {
+                const asBuiltPercentage = parseInt(document.getElementById('asBuiltEffort')?.value || 10) / 100;
+                const handoverPercentage = parseInt(document.getElementById('handoverWork')?.value || 5) / 100;
+                timelineResults.postConstructionHours = totalManhours * (asBuiltPercentage + handoverPercentage);
+            }
+            
+            // Calculate peak team size based on module scheduling
+            if (timeline.enabled.moduleSequencing && appState.modules.length > 0) {
+                const personnelReqs = calculatePersonnelRequirements();
+                const overlapFactor = timeline.moduleScheduling.overlapPercentage / 100;
+                
+                // With overlapping, peak team size increases
+                timelineResults.peakTeamSize = personnelReqs.totalFTE * (1 + overlapFactor * 0.5);
+                
+                // Critical path adjustments based on module strategy
+                if (timeline.moduleScheduling.strategy === 'parallel') {
+                    timelineResults.criticalPath = timeline.project.engineeringDuration * (1 - overlapFactor * 0.3);
+                } else if (timeline.moduleScheduling.strategy === 'sequential') {
+                    timelineResults.criticalPath = timeline.project.engineeringDuration * appState.modules.length * 0.8;
+                }
+            }
+            
+            return timelineResults;
+        }
+
+        function resetTimelineSettings() {
+            appState.timeline = {
+                enabled: {
+                    moduleSequencing: true,
+                    resourceLoading: true,
+                    postConstruction: true
+                },
+                project: {
+                    totalDuration: 12,
+                    engineeringDuration: 8,
+                    constructionSupportDuration: 4
+                },
+                moduleScheduling: {
+                    strategy: 'parallel',
+                    overlapPercentage: 30,
+                    moduleEngineeringDuration: 6
+                },
+                resourceLoading: {
+                    peakUtilization: 85,
+                    rampUpDuration: 2,
+                    rampDownDuration: 1
+                },
+                postConstruction: {
+                    asBuiltEffort: 10,
+                    handoverWork: 5,
+                    teamSizePercentage: 25
+                }
+            };
+            
+            updateTimelineFormValues();
+            updateTimelineCalculations();
+            showNotification('Timeline settings reset to defaults', 'success');
         }
 
         // Parametric Model Functions
@@ -1413,6 +2304,10 @@
                 renderModules();
             } else if (tabId === 'deliverables') {
                 renderDeliverables();
+            } else if (tabId === 'personnel') {
+                initializePersonnelSettings();
+            } else if (tabId === 'timeline') {
+                initializeTimelineSettings();
             } else if (tabId === 'kpis') {
                 renderKPIs();
             } else if (tabId === 'parametric') {
@@ -1775,6 +2670,21 @@
                 }
             });
 
+            // Add post-construction support calculations
+            if (appState.timeline && appState.timeline.enabled.postConstruction) {
+                const timelineImpacts = calculateTimelineImpacts();
+                const postConstructionHours = timelineImpacts.postConstructionHours;
+                
+                if (postConstructionHours > 0) {
+                    results.byDeliverable['post_construction'] = {
+                        name: 'Post-Construction Support',
+                        hours: postConstructionHours,
+                        category: 'Post-Construction'
+                    };
+                    results.totalManhours += postConstructionHours;
+                }
+            }
+
             // Apply parametric factors if parametric model is available
             if (appState.parametricModel) {
                 const parametricFactors = calculateParametricFactors();
@@ -1811,9 +2721,37 @@
                 
                 results.duration.days = Math.ceil(results.totalManhours / detailingRate);
                 results.duration.months = Math.ceil(results.duration.days / workingDaysMonth * 10) / 10; // Round to 1 decimal place
+                
+                // Use timeline settings if available
+                if (appState.timeline && appState.timeline.project.engineeringDuration) {
+                    results.duration.months = Math.max(results.duration.months, appState.timeline.project.engineeringDuration);
+                }
             }
 
             appState.results = results;
+            
+            // Update personnel calculations if personnel tab is initialized
+            if (appState.personnel) {
+                const personnelResults = calculatePersonnelRequirements();
+                if (document.getElementById('leadEngineerCount')) {
+                    document.getElementById('leadEngineerCount').textContent = personnelResults.leadEngineer.toFixed(1) + ' FTE';
+                    document.getElementById('electricalEngineerCount').textContent = personnelResults.electricalEngineers.toFixed(1) + ' FTE';
+                    document.getElementById('instrumentEngineerCount').textContent = personnelResults.instrumentEngineers.toFixed(1) + ' FTE';
+                    document.getElementById('electricalDetailerCount').textContent = personnelResults.electricalDetailers.toFixed(1) + ' FTE';
+                    document.getElementById('instrumentDetailerCount').textContent = personnelResults.instrumentDetailers.toFixed(1) + ' FTE';
+                    document.getElementById('modelerCount').textContent = personnelResults.modelers.toFixed(1) + ' FTE';
+                    document.getElementById('totalTeamSize').textContent = personnelResults.totalFTE.toFixed(1) + ' FTE';
+                    document.getElementById('peakHeadcount').textContent = Math.ceil(personnelResults.totalFTE) + ' People';
+                }
+            }
+            
+            // Update timeline calculations if timeline tab is initialized
+            if (appState.timeline && document.getElementById('peakTeamSizeDisplay')) {
+                const timelineResults = calculateTimelineImpacts();
+                document.getElementById('peakTeamSizeDisplay').textContent = Math.ceil(timelineResults.peakTeamSize) + ' people';
+                document.getElementById('postConstructionHours').textContent = Math.round(timelineResults.postConstructionHours).toLocaleString() + ' hours';
+                document.getElementById('criticalPathDuration').textContent = timelineResults.criticalPath.toFixed(1) + ' months';
+            }
             
             // Update dashboard with new results
             updateDashboard();

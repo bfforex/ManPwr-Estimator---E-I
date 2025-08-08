@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E&I Estimating Tool - AG&P Industrial</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/recharts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #003366;
+            --secondary-blue: #0056a3;
+            --accent-orange: #ff6600;
+            --dark-blue: #001a33;
+            --light-blue: #e6f2ff;
+            --success-green: #10b981;
+            --warning-orange: #f97316;
+            --error-red: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--light-blue) 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: var(--accent-orange);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .company-info h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.5px;
+        }
+
+        .company-info p {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            background: white;
+            padding: 0 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--gray-600);
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: var(--primary-blue);
+            background: var(--light-blue);
+        }
+
+        .nav-tab.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--accent-orange);
+            background: var(--light-blue);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .card h3 {
+            color: var(--primary-blue);
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metric-card {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 1rem 0;
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: var(--light-blue);
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-orange);
+        }
+
+        .section-title {
+            color: var(--primary-blue);
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--gray-800);
+        }
+
+        .form-input, .form-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--secondary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--dark-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--accent-orange);
+            color: white;
+        }
+
+        .module-item {
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .module-item:hover {
+            border-color: var(--secondary-blue);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .module-type {
+            font-weight: 600;
+            color: var(--primary-blue);
+            font-size: 1.1rem;
+        }
+
+        .complexity-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .complexity-highly-complex {
+            background: var(--error-red);
+            color: white;
+        }
+
+        .complexity-complex {
+            background: var(--warning-orange);
+            color: white;
+        }
+
+        .complexity-moderate {
+            background: var(--accent-orange);
+            color: white;
+        }
+
+        .complexity-simple {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .deliverable-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .deliverable-checkbox {
+            width: 1.2rem;
+            height: 1.2rem;
+            accent-color: var(--primary-blue);
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .results-table th {
+            background: var(--primary-blue);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .results-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .results-table tr:hover {
+            background: var(--light-blue);
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--gray-300);
+            border-radius: 50%;
+            border-top-color: var(--primary-blue);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success-green);
+        }
+
+        .notification.error {
+            background: var(--error-red);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-orange);
+        }
+
+        .kpi-label {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .nav-tabs {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">AG&P</div>
+                <div class="company-info">
+                    <h1>AG&P Industrial</h1>
+                    <p>Always Forward</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-warning" onclick="exportProject()">📊 Export</button>
+                <button class="btn btn-secondary" onclick="importProject()">📁 Import</button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav-tabs">
+        <button class="nav-tab active" onclick="showTab('dashboard', this)">📊 Dashboard</button>
+        <button class="nav-tab" onclick="showTab('modules', this)">🏗️ Modules</button>
+        <button class="nav-tab" onclick="showTab('deliverables', this)">📋 Deliverables</button>
+        <button class="nav-tab" onclick="showTab('kpis', this)">⚙️ KPIs</button>
+        <button class="nav-tab" onclick="showTab('results', this)">📈 Results</button>
+        <button class="nav-tab" onclick="showTab('reports', this)">📄 Reports</button>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="card metric-card">
+                    <h3>Total Manhours</h3>
+                    <div class="metric-value" id="totalManhours">0</div>
+                    <div class="metric-label">Estimated Hours</div>
+                </div>
+                <div class="card metric-card">
+                    <h3>Active Modules</h3>
+                    <div class="metric-value" id="activeModules">0</div>
+                    <div class="metric-label">Configured</div>
+                </div>
+                <div class="card metric-card">
+                    <h3>Project Duration</h3>
+                    <div class="metric-value" id="projectDuration">0</div>
+                    <div class="metric-label">Months</div>
+                </div>
+                <div class="card metric-card">
+                    <h3>Total Cost</h3>
+                    <div class="metric-value" id="totalCost">₱0</div>
+                    <div class="metric-label">Estimated</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Manhour Distribution</h3>
+                <div id="manhourChart" style="width: 100%; height: 400px;"></div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Module Complexity Breakdown</h3>
+                <div id="complexityChart" style="width: 100%; height: 300px;"></div>
+            </div>
+        </div>
+
+        <!-- Modules Tab -->
+        <div id="modules" class="tab-content">
+            <div class="card">
+                <div class="section-header">
+                    <h3 class="section-title">Module Configuration</h3>
+                    <button class="btn btn-primary" onclick="addNewModule()">+ Add Module</button>
+                </div>
+                <div id="modulesList"></div>
+            </div>
+        </div>
+
+        <!-- Deliverables Tab -->
+        <div id="deliverables" class="tab-content">
+            <div class="card">
+                <div class="section-header">
+                    <h3 class="section-title">Project Deliverables</h3>
+                    <div>
+                        <button class="btn btn-primary" onclick="selectAllDeliverables()">Select All</button>
+                        <button class="btn btn-secondary" onclick="clearAllDeliverables()">Clear All</button>
+                    </div>
+                </div>
+                <div id="deliverablesList"></div>
+            </div>
+        </div>
+
+        <!-- KPIs Tab -->
+        <div id="kpis" class="tab-content">
+            <div class="card">
+                <div class="section-header">
+                    <h3 class="section-title">Key Performance Indicators</h3>
+                    <button class="btn btn-primary" onclick="resetKPIs()">Reset to Defaults</button>
+                </div>
+                <div class="kpi-grid" id="kpiGrid"></div>
+            </div>
+        </div>
+
+        <!-- Results Tab -->
+        <div id="results" class="tab-content">
+            <div class="card">
+                <h3>Detailed Results</h3>
+                <table class="results-table" id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Activity</th>
+                            <th>Manhours</th>
+                            <th>Duration (Days)</th>
+                            <th>Cost (₱)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content">
+            <div class="card">
+                <div class="section-header">
+                    <h3 class="section-title">Report Generation</h3>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Report Type</label>
+                        <select class="form-select" id="reportType">
+                            <option value="summary">Executive Summary</option>
+                            <option value="detailed">Detailed Breakdown</option>
+                            <option value="comparison">Scenario Comparison</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Format</label>
+                        <select class="form-select" id="reportFormat">
+                            <option value="pdf">PDF Report</option>
+                            <option value="excel">Excel Export</option>
+                            <option value="json">Data Export (JSON)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="generateReport()">📄 Generate Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+
+    <!-- Notification element -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Application State
+        let appState = {
+            modules: [],
+            deliverables: [],
+            kpis: {},
+            results: {},
+            projectInfo: {
+                name: 'New E&I Project',
+                description: 'Electrical & Instrumentation Estimate',
+                createdDate: new Date().toISOString(),
+                lastModified: new Date().toISOString()
+            }
+        };
+
+        // Default Module Types
+        const defaultModuleTypes = {
+            'Highly Complex (H)': {
+                description: 'Local Electrical/Instrument Room',
+                scope: 'Complete System Scope',
+                baseRates: { electrical: 120, telecom: 108, instrumentation: 152 }
+            },
+            'Complex (C)': {
+                description: 'Pre-assembled Unit/Process Modules',
+                scope: 'Multiple System Integration',
+                baseRates: { electrical: 120, telecom: 54, instrumentation: 152 }
+            },
+            'Moderate (M)': {
+                description: 'Preassembled Rack/Pipe Rack',
+                scope: '2 to 3 Systems',
+                baseRates: { electrical: 60, telecom: 12, instrumentation: 64 }
+            },
+            'Simple (S)': {
+                description: 'Pre-assembled Structure',
+                scope: '≤3 Systems',
+                baseRates: { electrical: 0, telecom: 0, instrumentation: 0 }
+            }
+        };
+
+        // Default Deliverables
+        const defaultDeliverables = [
+            { id: 'erd_layout', name: 'ERD Electrical Layout', category: 'Design', selected: true, multiplier: 1.0 },
+            { id: 'cable_schedule', name: 'Cable Schedule/Drumming', category: 'Design', selected: true, multiplier: 0.3 },
+            { id: '3d_modeling', name: '3D Modeling', category: 'Design', selected: true, multiplier: 2.4 },
+            { id: 'work_package', name: 'Work Package', category: 'Engineering', selected: true, multiplier: 0.008 },
+            { id: 'material_takeoff', name: 'Material Take-off', category: 'Engineering', selected: false, multiplier: 0.5 },
+            { id: 'installation_drawings', name: 'Installation Drawings', category: 'Design', selected: false, multiplier: 0.8 },
+            { id: 'testing_procedures', name: 'Testing Procedures', category: 'Engineering', selected: false, multiplier: 0.2 },
+            { id: 'commissioning_plan', name: 'Commissioning Plan', category: 'Engineering', selected: false, multiplier: 0.3 }
+        ];
+
+        // Default KPIs
+        const defaultKPIs = {
+            detailing_rate: { label: 'Detailing Rate (MH/Day)', value: 8, unit: 'hours' },
+            checking_rate: { label: 'Checking Rate (MH/Day)', value: 12, unit: 'hours' },
+            hourly_rate: { label: 'Hourly Rate', value: 850, unit: '₱' },
+            overhead_factor: { label: 'Overhead Factor', value: 1.25, unit: 'multiplier' },
+            productivity_factor: { label: 'Productivity Factor', value: 0.85, unit: 'multiplier' },
+            working_days_month: { label: 'Working Days/Month', value: 22, unit: 'days' },
+            sheets_per_day_det: { label: 'Sheets/Day (Detailing)', value: 3.5, unit: 'sheets' },
+            sheets_per_day_chk: { label: 'Sheets/Day (Checking)', value: 6, unit: 'sheets' }
+        };
+
+        // Initialize Application
+        function initApp() {
+            loadFromStorage();
+            renderModules();
+            renderDeliverables();
+            renderKPIs();
+            calculateResults();
+            updateDashboard();
+            
+            // If no modules exist, show a helpful message
+            if (appState.modules.length === 0) {
+                showNotification('Welcome! Click "Add Module" to start your estimate.', 'success');
+            }
+        }
+
+        // Tab Management
+        function showTab(tabId, tabElement) {
+            // Remove active class from all tabs and content
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            const selectedContent = document.getElementById(tabId);
+            
+            if (selectedContent) {
+                selectedContent.classList.add('active');
+            }
+            
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
+
+            // Special handling for specific tabs
+            if (tabId === 'dashboard') {
+                updateDashboard();
+                setTimeout(() => renderCharts(), 100); // Small delay for DOM update
+            } else if (tabId === 'results') {
+                renderResultsTable();
+            } else if (tabId === 'modules') {
+                renderModules();
+            } else if (tabId === 'deliverables') {
+                renderDeliverables();
+            } else if (tabId === 'kpis') {
+                renderKPIs();
+            }
+        }
+
+        // Module Management
+        function addNewModule() {
+            const moduleId = Date.now().toString();
+            const newModule = {
+                id: moduleId,
+                type: 'Complex (C)',
+                customType: '',
+                quantity: 1,
+                areas: {
+                    electrical: 0,
+                    telecom: 0,
+                    instrumentation: 0
+                },
+                levels: {
+                    electrical: 1,
+                    telecom: 1,
+                    instrumentation: 1
+                },
+                mto: {
+                    electrical: 0,
+                    telecom: 0,
+                    instrumentation: 0
+                }
+            };
+            
+            appState.modules.push(newModule);
+            renderModules();
+            calculateResults();
+            saveToStorage();
+        }
+
+        function removeModule(moduleId) {
+            appState.modules = appState.modules.filter(m => m.id !== moduleId);
+            renderModules();
+            calculateResults();
+            saveToStorage();
+        }
+
+        function renderModules() {
+            const modulesList = document.getElementById('modulesList');
+            modulesList.innerHTML = '';
+
+            appState.modules.forEach(module => {
+                const moduleDiv = document.createElement('div');
+                moduleDiv.className = 'module-item';
+                moduleDiv.innerHTML = `
+                    <div class="module-header">
+                        <div class="module-type">${module.customType || module.type} (×${module.quantity})</div>
+                        <div>
+                            <span class="complexity-badge complexity-${module.type.toLowerCase().replace(/[^a-z]/g, '-')}">${module.type}</span>
+                            <button class="btn btn-secondary" onclick="removeModule('${module.id}')">Remove</button>
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Module Type</label>
+                            <select class="form-select" onchange="updateModule('${module.id}', 'type', this.value)">
+                                ${Object.keys(defaultModuleTypes).map(type => 
+                                    `<option value="${type}" ${module.type === type ? 'selected' : ''}>${type}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Custom Type (Optional)</label>
+                            <input type="text" class="form-input" value="${module.customType}" 
+                                   onchange="updateModule('${module.id}', 'customType', this.value)" 
+                                   placeholder="Enter custom module type">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" class="form-input" value="${module.quantity}" min="1"
+                                   onchange="updateModule('${module.id}', 'quantity', parseInt(this.value))">
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Electrical Areas</label>
+                            <input type="number" class="form-input" value="${module.areas.electrical}" min="0"
+                                   onchange="updateModuleSystem('${module.id}', 'areas', 'electrical', parseInt(this.value))">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telecom Areas</label>
+                            <input type="number" class="form-input" value="${module.areas.telecom}" min="0"
+                                   onchange="updateModuleSystem('${module.id}', 'areas', 'telecom', parseInt(this.value))">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Instrumentation Areas</label>
+                            <input type="number" class="form-input" value="${module.areas.instrumentation}" min="0"
+                                   onchange="updateModuleSystem('${module.id}', 'areas', 'instrumentation', parseInt(this.value))">
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Electrical Levels</label>
+                            <input type="number" class="form-input" value="${module.levels.electrical}" min="1"
+                                   onchange="updateModuleSystem('${module.id}', 'levels', 'electrical', parseInt(this.value))">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telecom Levels</label>
+                            <input type="number" class="form-input" value="${module.levels.telecom}" min="1"
+                                   onchange="updateModuleSystem('${module.id}', 'levels', 'telecom', parseInt(this.value))">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Instrumentation Levels</label>
+                            <input type="number" class="form-input" value="${module.levels.instrumentation}" min="1"
+                                   onchange="updateModuleSystem('${module.id}', 'levels', 'instrumentation', parseInt(this.value))">
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Electrical MTO</label>
+                            <input type="number" class="form-input" value="${module.mto.electrical}" min="0"
+                                   onchange="updateModuleSystem('${module.id}', 'mto', 'electrical', parseInt(this.value))">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telecom MTO</label>
+                            <input type="number" class="form-input" value="${module.mto.telecom}" min="0"
+                                   onchange="updateModuleSystem('${module.id}', 'mto', 'telecom', parseInt(this.value))">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Instrumentation MTO</label>
+                            <input type="number" class="form-input" value="${module.mto.instrumentation}" min="0"
+                                   onchange="updateModuleSystem('${module.id}', 'mto', 'instrumentation', parseInt(this.value))">
+                        </div>
+                    </div>
+                `;
+                modulesList.appendChild(moduleDiv);
+            });
+
+            if (appState.modules.length === 0) {
+                modulesList.innerHTML = '<p style="text-align: center; padding: 2rem;">No modules added yet. Click "Add Module" to begin.</p>';
+            }
+        }
+
+        // Module property update functions
+        function updateModule(moduleId, property, value) {
+            const module = appState.modules.find(m => m.id === moduleId);
+            if (module) {
+                module[property] = value;
+                calculateResults();
+                saveToStorage();
+            }
+        }
+
+        function updateModuleSystem(moduleId, category, system, value) {
+            const module = appState.modules.find(m => m.id === moduleId);
+            if (module) {
+                // Ensure value is at least 0 (or 1 for levels)
+                const minValue = category === 'levels' ? 1 : 0;
+                module[category][system] = isNaN(value) || value < minValue ? minValue : value;
+                calculateResults();
+                saveToStorage();
+            }
+        }
+
+        // Deliverable Management
+        function renderDeliverables() {
+            const deliverablesList = document.getElementById('deliverablesList');
+            deliverablesList.innerHTML = '';
+
+            // Initialize deliverables if empty
+            if (appState.deliverables.length === 0) {
+                appState.deliverables = JSON.parse(JSON.stringify(defaultDeliverables));
+            }
+
+            // Group deliverables by category
+            const categorizedDeliverables = {};
+            appState.deliverables.forEach(deliverable => {
+                if (!categorizedDeliverables[deliverable.category]) {
+                    categorizedDeliverables[deliverable.category] = [];
+                }
+                categorizedDeliverables[deliverable.category].push(deliverable);
+            });
+
+            // Render grouped deliverables
+            Object.keys(categorizedDeliverables).forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'deliverable-category';
+                categoryDiv.innerHTML = `<h4 style="margin: 1rem 0 0.5rem 0; color: var(--primary-blue);">${category} Deliverables</h4>`;
+                deliverablesList.appendChild(categoryDiv);
+
+                categorizedDeliverables[category].forEach(deliverable => {
+                    const deliverableDiv = document.createElement('div');
+                    deliverableDiv.className = 'deliverable-item';
+                    deliverableDiv.innerHTML = `
+                        <input type="checkbox" class="deliverable-checkbox" 
+                               id="${deliverable.id}" 
+                               ${deliverable.selected ? 'checked' : ''}
+                               onchange="toggleDeliverable('${deliverable.id}')">
+                        <label for="${deliverable.id}" style="flex-grow: 1;">${deliverable.name}</label>
+                        <span style="color: var(--gray-600); font-size: 0.9rem;">Multiplier: ${deliverable.multiplier}x</span>
+                    `;
+                    deliverablesList.appendChild(deliverableDiv);
+                });
+            });
+        }
+
+        function toggleDeliverable(id) {
+            const deliverable = appState.deliverables.find(d => d.id === id);
+            if (deliverable) {
+                deliverable.selected = !deliverable.selected;
+                calculateResults();
+                saveToStorage();
+            }
+        }
+
+        function selectAllDeliverables() {
+            appState.deliverables.forEach(deliverable => {
+                deliverable.selected = true;
+            });
+            renderDeliverables();
+            calculateResults();
+            saveToStorage();
+            showNotification('All deliverables selected', 'success');
+        }
+
+        function clearAllDeliverables() {
+            appState.deliverables.forEach(deliverable => {
+                deliverable.selected = false;
+            });
+            renderDeliverables();
+            calculateResults();
+            saveToStorage();
+            showNotification('All deliverables cleared', 'success');
+        }
+
+        // KPI Management
+        function renderKPIs() {
+            const kpiGrid = document.getElementById('kpiGrid');
+            kpiGrid.innerHTML = '';
+
+            // Initialize KPIs if empty
+            if (Object.keys(appState.kpis).length === 0) {
+                appState.kpis = JSON.parse(JSON.stringify(defaultKPIs));
+            }
+
+            // Render KPI inputs
+            Object.keys(appState.kpis).forEach(kpiKey => {
+                const kpi = appState.kpis[kpiKey];
+                const kpiItem = document.createElement('div');
+                kpiItem.className = 'kpi-item';
+                kpiItem.innerHTML = `
+                    <div class="kpi-label">${kpi.label}</div>
+                    <div class="form-group">
+                        <div style="display: flex; align-items: center;">
+                            <input type="number" class="form-input" style="flex-grow: 1;" 
+                                   value="${kpi.value}" step="0.01"
+                                   onchange="updateKPI('${kpiKey}', parseFloat(this.value))">
+                            <span style="margin-left: 8px; color: var(--gray-600);">${kpi.unit}</span>
+                        </div>
+                    </div>
+                `;
+                kpiGrid.appendChild(kpiItem);
+            });
+        }
+
+        function updateKPI(key, value) {
+            if (appState.kpis[key]) {
+                appState.kpis[key].value = isNaN(value) ? appState.kpis[key].value : value;
+                calculateResults();
+                saveToStorage();
+            }
+        }
+
+        function resetKPIs() {
+            appState.kpis = JSON.parse(JSON.stringify(defaultKPIs));
+            renderKPIs();
+            calculateResults();
+            saveToStorage();
+            showNotification('KPIs reset to default values', 'success');
+        }
+
+        // Results Calculation
+        function calculateResults() {
+            const results = {
+                totalManhours: 0,
+                byModule: [],
+                bySystem: {
+                    electrical: 0,
+                    telecom: 0,
+                    instrumentation: 0
+                },
+                byDeliverable: {},
+                totalCost: 0,
+                duration: {
+                    days: 0,
+                    months: 0
+                }
+            };
+
+            // Calculate manhours for each module
+            appState.modules.forEach(module => {
+                const moduleType = defaultModuleTypes[module.type];
+                const moduleResults = {
+                    id: module.id,
+                    name: module.customType || module.type,
+                    quantity: module.quantity,
+                    systems: {
+                        electrical: 0,
+                        telecom: 0,
+                        instrumentation: 0
+                    },
+                    total: 0
+                };
+
+                // Calculate base manhours for each system
+                const systems = ['electrical', 'telecom', 'instrumentation'];
+                systems.forEach(system => {
+                    // Formula: Base Rate * Areas * Levels * Quantity
+                    const baseRate = moduleType.baseRates[system];
+                    const areas = module.areas[system];
+                    const levels = module.levels[system];
+                    const mto = module.mto[system];
+                    
+                    // Calculate system hours (base calculation + MTO adjustment)
+                    let systemHours = baseRate * areas * levels * module.quantity;
+                    
+                    // Add MTO factor if available
+                    if (mto > 0) {
+                        systemHours += mto * 0.5; // Assuming 0.5 hours per MTO item
+                    }
+
+                    moduleResults.systems[system] = systemHours;
+                    moduleResults.total += systemHours;
+                    results.bySystem[system] += systemHours;
+                });
+
+                results.totalManhours += moduleResults.total;
+                results.byModule.push(moduleResults);
+            });
+
+            // Apply deliverable multipliers to manhours
+            appState.deliverables.forEach(deliverable => {
+                if (deliverable.selected) {
+                    const deliverableHours = results.totalManhours * deliverable.multiplier;
+                    results.byDeliverable[deliverable.id] = {
+                        name: deliverable.name,
+                        hours: deliverableHours,
+                        category: deliverable.category
+                    };
+                    results.totalManhours += deliverableHours;
+                }
+            });
+
+            // Apply productivity factor
+            if (appState.kpis.productivity_factor) {
+                const productivityFactor = appState.kpis.productivity_factor.value;
+                results.totalManhours = results.totalManhours / productivityFactor;
+            }
+
+            // Calculate cost
+            if (appState.kpis.hourly_rate) {
+                const hourlyRate = appState.kpis.hourly_rate.value;
+                const overheadFactor = appState.kpis.overhead_factor ? appState.kpis.overhead_factor.value : 1.0;
+                results.totalCost = results.totalManhours * hourlyRate * overheadFactor;
+            }
+
+            // Calculate duration
+            if (appState.kpis.detailing_rate && appState.kpis.working_days_month) {
+                const detailingRate = appState.kpis.detailing_rate.value;
+                const workingDaysMonth = appState.kpis.working_days_month.value;
+                
+                results.duration.days = Math.ceil(results.totalManhours / detailingRate);
+                results.duration.months = Math.ceil(results.duration.days / workingDaysMonth * 10) / 10; // Round to 1 decimal place
+            }
+
+            appState.results = results;
+            
+            // Update dashboard with new results
+            updateDashboard();
+        }
+
+        // Results Table Rendering
+        function renderResultsTable() {
+            const resultsTableBody = document.querySelector('#resultsTable tbody');
+            resultsTableBody.innerHTML = '';
+
+            // Check if results exist
+            if (!appState.results || !appState.results.byModule || appState.results.byModule.length === 0) {
+                resultsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No results available. Add modules to see detailed calculations.</td></tr>';
+                return;
+            }
+
+            // Add module rows
+            appState.results.byModule.forEach(moduleResult => {
+                // Add row for each system in the module
+                Object.keys(moduleResult.systems).forEach(system => {
+                    if (moduleResult.systems[system] > 0) {
+                        const systemHours = moduleResult.systems[system];
+                        const systemDays = systemHours / (appState.kpis.detailing_rate?.value || 8);
+                        const systemCost = systemHours * (appState.kpis.hourly_rate?.value || 0);
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${moduleResult.name} (×${moduleResult.quantity})</td>
+                            <td>${system.charAt(0).toUpperCase() + system.slice(1)}</td>
+                            <td>${systemHours.toFixed(1)}</td>
+                            <td>${systemDays.toFixed(1)}</td>
+                            <td>₱${systemCost.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                        `;
+                        resultsTableBody.appendChild(row);
+                    }
+                });
+            });
+
+            // Add deliverable rows
+            if (appState.results.byDeliverable) {
+                Object.keys(appState.results.byDeliverable).forEach(delivId => {
+                    const deliverable = appState.results.byDeliverable[delivId];
+                    const delivDays = deliverable.hours / (appState.kpis.detailing_rate?.value || 8);
+                    const delivCost = deliverable.hours * (appState.kpis.hourly_rate?.value || 0);
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${deliverable.category}</td>
+                        <td>${deliverable.name}</td>
+                        <td>${deliverable.hours.toFixed(1)}</td>
+                        <td>${delivDays.toFixed(1)}</td>
+                        <td>₱${delivCost.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                    `;
+                    resultsTableBody.appendChild(row);
+                });
+            }
+
+            // Add total row
+            const totalRow = document.createElement('tr');
+            totalRow.style.fontWeight = 'bold';
+            totalRow.style.backgroundColor = 'var(--light-blue)';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>All Activities</td>
+                <td>${appState.results.totalManhours.toFixed(1)}</td>
+                <td>${appState.results.duration.days}</td>
+                <td>₱${appState.results.totalCost.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+            `;
+            resultsTableBody.appendChild(totalRow);
+        }
+
+        // Dashboard Update
+        function updateDashboard() {
+            // Update metric cards
+            document.getElementById('totalManhours').innerText = appState.results.totalManhours ? 
+                Math.round(appState.results.totalManhours).toLocaleString() : '0';
+                
+            document.getElementById('activeModules').innerText = 
+                appState.modules.reduce((sum, module) => sum + module.quantity, 0).toLocaleString();
+                
+            document.getElementById('projectDuration').innerText = 
+                appState.results.duration ? appState.results.duration.months.toFixed(1) : '0';
+                
+            document.getElementById('totalCost').innerText = appState.results.totalCost ? 
+                '₱' + Math.round(appState.results.totalCost).toLocaleString() : '₱0';
+        }
+
+        // Chart Rendering
+        function renderCharts() {
+            if (!appState.results || !appState.results.bySystem) return;
+            
+            // Create manhour distribution chart
+            const systemLabels = ['Electrical', 'Telecom', 'Instrumentation'];
+            const systemValues = [
+                appState.results.bySystem.electrical || 0,
+                appState.results.bySystem.telecom || 0,
+                appState.results.bySystem.instrumentation || 0
+            ];
+            
+            const maxValue = Math.max(...systemValues);
+            
+            // Simple bar chart using divs (fallback for simplicity)
+            const chartContainer = document.getElementById('manhourChart');
+            chartContainer.innerHTML = '';
+            
+            systemLabels.forEach((label, index) => {
+                const value = systemValues[index];
+                const percent = maxValue > 0 ? (value / maxValue) * 100 : 0;
+                
+                const barContainer = document.createElement('div');
+                barContainer.style.display = 'flex';
+                barContainer.style.alignItems = 'center';
+                barContainer.style.margin = '10px 0';
+                
+                const labelDiv = document.createElement('div');
+                labelDiv.textContent = label;
+                labelDiv.style.width = '120px';
+                labelDiv.style.fontWeight = '500';
+                
+                const barWrap = document.createElement('div');
+                barWrap.style.flexGrow = '1';
+                barWrap.style.backgroundColor = 'var(--gray-200)';
+                barWrap.style.height = '25px';
+                barWrap.style.borderRadius = '4px';
+                barWrap.style.overflow = 'hidden';
+                
+                const bar = document.createElement('div');
+                bar.style.height = '100%';
+                bar.style.width = `${percent}%`;
+                bar.style.backgroundColor = getSystemColor(index);
+                
+                const valueText = document.createElement('div');
+                valueText.textContent = `${Math.round(value).toLocaleString()} hours`;
+                valueText.style.marginLeft = '10px';
+                valueText.style.fontWeight = '500';
+                
+                barWrap.appendChild(bar);
+                barContainer.appendChild(labelDiv);
+                barContainer.appendChild(barWrap);
+                barContainer.appendChild(valueText);
+                
+                chartContainer.appendChild(barContainer);
+            });
+            
+            // Module complexity chart
+            const complexityChart = document.getElementById('complexityChart');
+            complexityChart.innerHTML = '';
+            
+            // Count modules by complexity
+            const complexityCounts = {};
+            appState.modules.forEach(module => {
+                const type = module.type;
+                complexityCounts[type] = (complexityCounts[type] || 0) + module.quantity;
+            });
+            
+            const complexityLabels = Object.keys(complexityCounts);
+            const complexityValues = complexityLabels.map(label => complexityCounts[label]);
+            const totalModules = complexityValues.reduce((sum, val) => sum + val, 0);
+            
+            if (totalModules > 0) {
+                const pieChart = document.createElement('div');
+                pieChart.style.display = 'flex';
+                pieChart.style.justifyContent = 'center';
+                pieChart.style.alignItems = 'center';
+                pieChart.style.margin = '20px 0';
+                
+                // Create simple pie chart visualization
+                let cumulativePercent = 0;
+                const pieSize = 150;
+                
+                const pieContainer = document.createElement('div');
+                pieContainer.style.width = `${pieSize}px`;
+                pieContainer.style.height = `${pieSize}px`;
+                pieContainer.style.position = 'relative';
+                pieContainer.style.borderRadius = '50%';
+                
+                complexityLabels.forEach((label, index) => {
+                    const value = complexityValues[index];
+                    const percent = (value / totalModules) * 100;
+                    
+                    const slice = document.createElement('div');
+                    slice.style.position = 'absolute';
+                    slice.style.width = '100%';
+                    slice.style.height = '100%';
+                    slice.style.borderRadius = '50%';
+                    slice.style.clip = `rect(0, ${pieSize}px, ${pieSize}px, ${pieSize/2}px)`;
+                    
+                    const color = getComplexityColor(label);
+                    const sliceBg = document.createElement('div');
+                    sliceBg.style.position = 'absolute';
+                    sliceBg.style.width = '100%';
+                    sliceBg.style.height = '100%';
+                    sliceBg.style.borderRadius = '50%';
+                    sliceBg.style.clip = `rect(0, ${pieSize/2}px, ${pieSize}px, 0)`;
+                    sliceBg.style.transform = `rotate(${cumulativePercent * 3.6}deg)`;
+                    sliceBg.style.backgroundColor = color;
+                    
+                    slice.appendChild(sliceBg);
+                    
+                    if (percent > 50) {
+                        const sliceBg2 = document.createElement('div');
+                        sliceBg2.style.position = 'absolute';
+                        sliceBg2.style.width = '100%';
+                        sliceBg2.style.height = '100%';
+                        sliceBg2.style.borderRadius = '50%';
+                        sliceBg2.style.clip = `rect(0, ${pieSize}px, ${pieSize}px, ${pieSize/2}px)`;
+                        sliceBg2.style.transform = `rotate(${(cumulativePercent + 50) * 3.6}deg)`;
+                        sliceBg2.style.backgroundColor = color;
+                        slice.appendChild(sliceBg2);
+                    }
+                    
+                    pieContainer.appendChild(slice);
+                    cumulativePercent += percent;
+                });
+                
+                // Create legend
+                const legend = document.createElement('div');
+                legend.style.display = 'flex';
+                legend.style.flexDirection = 'column';
+                legend.style.marginLeft = '20px';
+                
+                complexityLabels.forEach((label, index) => {
+                    const value = complexityValues[index];
+                    const percent = (value / totalModules) * 100;
+                    
+                    const legendItem = document.createElement('div');
+                    legendItem.style.display = 'flex';
+                    legendItem.style.alignItems = 'center';
+                    legendItem.style.margin = '5px 0';
+                    
+                    const colorBox = document.createElement('div');
+                    colorBox.style.width = '15px';
+                    colorBox.style.height = '15px';
+                    colorBox.style.backgroundColor = getComplexityColor(label);
+                    colorBox.style.marginRight = '5px';
+                    
+                    const labelText = document.createElement('div');
+                    labelText.textContent = `${label}: ${value} (${percent.toFixed(1)}%)`;
+                    
+                    legendItem.appendChild(colorBox);
+                    legendItem.appendChild(labelText);
+                    legend.appendChild(legendItem);
+                });
+                
+                pieChart.appendChild(pieContainer);
+                pieChart.appendChild(legend);
+                complexityChart.appendChild(pieChart);
+            } else {
+                complexityChart.innerHTML = '<p style="text-align: center; padding: 1rem;">No modules added yet</p>';
+            }
+        }
+        
+        function getSystemColor(index) {
+            const colors = ['#3182CE', '#805AD5', '#DD6B20'];
+            return colors[index % colors.length];
+        }
+        
+        function getComplexityColor(complexity) {
+            const colorMap = {
+                'Highly Complex (H)': 'var(--error-red)',
+                'Complex (C)': 'var(--warning-orange)',
+                'Moderate (M)': 'var(--accent-orange)',
+                'Simple (S)': 'var(--success-green)'
+            };
+            
+            return colorMap[complexity] || '#888888';
+        }
+
+        // Report Generation
+        function generateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const reportFormat = document.getElementById('reportFormat').value;
+            
+            // Validate if we have data to generate a report
+            if (!appState.results || !appState.results.byModule || appState.results.byModule.length === 0) {
+                showNotification('No data available for report generation. Add modules first.', 'error');
+                return;
+            }
+            
+            if (reportFormat === 'json') {
+                // Export data as JSON
+                const dataStr = JSON.stringify(appState);
+                downloadFile('ei_estimate_data.json', dataStr, 'application/json');
+                showNotification('JSON data exported successfully', 'success');
+                return;
+            }
+            
+            if (reportFormat === 'pdf' && typeof jspdf !== 'undefined') {
+                try {
+                    // Create PDF document
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    // Add title
+                    doc.setFontSize(20);
+                    doc.text('AG&P Industrial - E&I Estimate Report', 20, 20);
+                    
+                    // Add report type and date
+                    doc.setFontSize(12);
+                    doc.text(`Report Type: ${reportType}`, 20, 30);
+                    doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 35);
+                    
+                    // Add summary info
+                    doc.setFontSize(16);
+                    doc.text('Project Summary', 20, 45);
+                    
+                    doc.setFontSize(11);
+                    doc.text(`Total Manhours: ${Math.round(appState.results.totalManhours).toLocaleString()}`, 25, 55);
+                    doc.text(`Estimated Duration: ${appState.results.duration.months.toFixed(1)} months`, 25, 60);
+                    doc.text(`Total Cost: ₱${Math.round(appState.results.totalCost).toLocaleString()}`, 25, 65);
+                    
+                    // Add module info
+                    doc.setFontSize(16);
+                    doc.text('Module Details', 20, 80);
+                    
+                    let yPosition = 90;
+                    appState.modules.forEach((module, index) => {
+                        // Check if we need a new page
+                        if (yPosition > 250) {
+                            doc.addPage();
+                            yPosition = 20;
+                        }
+                        
+                        doc.setFontSize(12);
+                        doc.text(`Module ${index + 1}: ${module.customType || module.type}`, 25, yPosition);
+                        yPosition += 5;
+                        
+                        doc.setFontSize(10);
+                        doc.text(`Quantity: ${module.quantity}`, 30, yPosition + 5);
+                        doc.text(`Electrical Areas: ${module.areas.electrical}`, 30, yPosition + 10);
+                        doc.text(`Telecom Areas: ${module.areas.telecom}`, 30, yPosition + 15);
+                        doc.text(`Instrumentation Areas: ${module.areas.instrumentation}`, 30, yPosition + 20);
+                        
+                        yPosition += 25;
+                    });
+                    
+                    // Save the PDF
+                    doc.save('ei_estimate_report.pdf');
+                    showNotification('PDF report generated successfully', 'success');
+                } catch (error) {
+                    console.error('Error generating PDF:', error);
+                    showNotification('Failed to generate PDF report. Check console for details.', 'error');
+                }
+            } else {
+                showNotification('Selected report format is not available.', 'error');
+            }
+        }
+
+        // Storage Management
+        function saveToStorage() {
+            try {
+                // Update last modified date
+                appState.projectInfo.lastModified = new Date().toISOString();
+                
+                // Save to local storage
+                localStorage.setItem('agpEiEstimatingTool', JSON.stringify(appState));
+            } catch (error) {
+                console.error('Failed to save state:', error);
+                showNotification('Failed to save data to local storage.', 'error');
+            }
+        }
+
+        function loadFromStorage() {
+            try {
+                const savedState = localStorage.getItem('agpEiEstimatingTool');
+                if (savedState) {
+                    appState = JSON.parse(savedState);
+                } else {
+                    // Initialize with defaults
+                    appState.deliverables = JSON.parse(JSON.stringify(defaultDeliverables));
+                    appState.kpis = JSON.parse(JSON.stringify(defaultKPIs));
+                }
+            } catch (error) {
+                console.error('Failed to load state:', error);
+                showNotification('Failed to load data from local storage.', 'error');
+                
+                // Initialize with defaults on error
+                appState.deliverables = JSON.parse(JSON.stringify(defaultDeliverables));
+                appState.kpis = JSON.parse(JSON.stringify(defaultKPIs));
+            }
+        }
+
+        // Import/Export Functions
+        function exportProject() {
+            try {
+                // Create export object with metadata
+                const exportData = JSON.stringify({
+                    metadata: {
+                        exportDate: new Date().toISOString(),
+                        version: '1.0.0',
+                        tool: 'AG&P E&I Estimating Tool'
+                    },
+                    data: appState
+                });
+                
+                // Download as JSON file
+                downloadFile('ei_estimate_export.json', exportData, 'application/json');
+                showNotification('Project exported successfully', 'success');
+            } catch (error) {
+                console.error('Export error:', error);
+                showNotification('Failed to export project', 'error');
+            }
+        }
+
+        function importProject() {
+            document.getElementById('importFile').click();
+        }
+
+        function handleFileImport(event) {
+            try {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        
+                        // Check if this is a valid export file
+                        if (importedData.data && importedData.metadata) {
+                            appState = importedData.data;
+                        } else if (importedData.modules) {
+                            // Direct state import
+                            appState = importedData;
+                        } else {
+                            throw new Error('Invalid import format');
+                        }
+                        
+                        // Reset file input
+                        document.getElementById('importFile').value = '';
+                        
+                        // Update UI
+                        renderModules();
+                        renderDeliverables();
+                        renderKPIs();
+                        calculateResults();
+                        showTab('dashboard', document.querySelector('.nav-tab.active'));
+                        
+                        showNotification('Project imported successfully', 'success');
+                    } catch (parseError) {
+                        console.error('Import parsing error:', parseError);
+                        showNotification('Failed to parse import file', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            } catch (error) {
+                console.error('Import error:', error);
+                showNotification('Failed to import project', 'error');
+            }
+        }
+
+        // Helper Functions
+        function downloadFile(filename, data, type) {
+            const blob = new Blob([data], {type: type});
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification ' + type;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Initialize the application when the page loads
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

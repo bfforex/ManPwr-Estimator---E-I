@@ -1576,37 +1576,71 @@
             const leadEngineerPremium = document.getElementById('leadEngineerPremium');
             if (leadEngineerPremium) personnel.leadEngineer.premium = parseInt(leadEngineerPremium.value) || 25;
             
-            // Update other personnel values
+            // Update electrical engineers values
             const electricalEngineerLevel = document.getElementById('electricalEngineerLevel');
             if (electricalEngineerLevel) personnel.electricalEngineers.level = electricalEngineerLevel.value;
             
             const electricalEngineerProductivity = document.getElementById('electricalEngineerProductivity');
             if (electricalEngineerProductivity) personnel.electricalEngineers.productivity = parseFloat(electricalEngineerProductivity.value) || 1.0;
             
+            const electricalEngineerScope = document.getElementById('electricalEngineerScope');
+            if (electricalEngineerScope) personnel.electricalEngineers.scope = electricalEngineerScope.value;
+            
+            // Update instrument engineers values
+            const instrumentEngineerLevel = document.getElementById('instrumentEngineerLevel');
+            if (instrumentEngineerLevel) personnel.instrumentEngineers.level = instrumentEngineerLevel.value;
+            
+            const instrumentEngineerProductivity = document.getElementById('instrumentEngineerProductivity');
+            if (instrumentEngineerProductivity) personnel.instrumentEngineers.productivity = parseFloat(instrumentEngineerProductivity.value) || 1.0;
+            
+            const instrumentEngineerScope = document.getElementById('instrumentEngineerScope');
+            if (instrumentEngineerScope) personnel.instrumentEngineers.scope = instrumentEngineerScope.value;
+            
+            // Update detailers values
             const electricalDetailerRate = document.getElementById('electricalDetailerRate');
             if (electricalDetailerRate) personnel.electricalDetailers.rate = parseFloat(electricalDetailerRate.value) || 7;
+            
+            const electricalDetailerLevel = document.getElementById('electricalDetailerLevel');
+            if (electricalDetailerLevel) personnel.electricalDetailers.level = electricalDetailerLevel.value;
+            
+            const electricalDetailerCAD = document.getElementById('electricalDetailerCAD');
+            if (electricalDetailerCAD) personnel.electricalDetailers.cad = electricalDetailerCAD.value;
             
             const instrumentDetailerRate = document.getElementById('instrumentDetailerRate');
             if (instrumentDetailerRate) personnel.instrumentDetailers.rate = parseFloat(instrumentDetailerRate.value) || 6;
             
+            const instrumentDetailerLevel = document.getElementById('instrumentDetailerLevel');
+            if (instrumentDetailerLevel) personnel.instrumentDetailers.level = instrumentDetailerLevel.value;
+            
+            const instrumentDetailerSpecialization = document.getElementById('instrumentDetailerSpecialization');
+            if (instrumentDetailerSpecialization) personnel.instrumentDetailers.specialization = instrumentDetailerSpecialization.value;
+            
+            // Update 3D modelers values
+            const modelerSoftware = document.getElementById('modelerSoftware');
+            if (modelerSoftware) personnel['3DModelers'].software = modelerSoftware.value;
+            
             const modelerRate = document.getElementById('modelerRate');
             if (modelerRate) personnel['3DModelers'].rate = parseFloat(modelerRate.value) || 6;
             
-            // Calculate personnel requirements based on project scope
+            const modelerComplexity = document.getElementById('modelerComplexity');
+            if (modelerComplexity) personnel['3DModelers'].complexity = modelerComplexity.value;
+            
+            // Calculate personnel requirements based on current project scope
             const results = calculatePersonnelRequirements();
             
             // Update display
-            document.getElementById('leadEngineerCount').textContent = results.leadEngineer.toFixed(1) + ' FTE';
-            document.getElementById('electricalEngineerCount').textContent = results.electricalEngineers.toFixed(1) + ' FTE';
-            document.getElementById('instrumentEngineerCount').textContent = results.instrumentEngineers.toFixed(1) + ' FTE';
-            document.getElementById('electricalDetailerCount').textContent = results.electricalDetailers.toFixed(1) + ' FTE';
-            document.getElementById('instrumentDetailerCount').textContent = results.instrumentDetailers.toFixed(1) + ' FTE';
-            document.getElementById('modelerCount').textContent = results.modelers.toFixed(1) + ' FTE';
-            document.getElementById('totalTeamSize').textContent = results.totalFTE.toFixed(1) + ' FTE';
-            document.getElementById('peakHeadcount').textContent = Math.ceil(results.totalFTE) + ' People';
+            if (document.getElementById('leadEngineerCount')) {
+                document.getElementById('leadEngineerCount').textContent = results.leadEngineer.toFixed(1) + ' FTE';
+                document.getElementById('electricalEngineerCount').textContent = results.electricalEngineers.toFixed(1) + ' FTE';
+                document.getElementById('instrumentEngineerCount').textContent = results.instrumentEngineers.toFixed(1) + ' FTE';
+                document.getElementById('electricalDetailerCount').textContent = results.electricalDetailers.toFixed(1) + ' FTE';
+                document.getElementById('instrumentDetailerCount').textContent = results.instrumentDetailers.toFixed(1) + ' FTE';
+                document.getElementById('modelerCount').textContent = results.modelers.toFixed(1) + ' FTE';
+                document.getElementById('totalTeamSize').textContent = results.totalFTE.toFixed(1) + ' FTE';
+                document.getElementById('peakHeadcount').textContent = Math.ceil(results.totalFTE) + ' People';
+            }
             
-            // Recalculate overall results
-            calculateResults();
+            // Save state without triggering full recalculation to avoid infinite loop
             saveToStorage();
         }
 
@@ -1641,60 +1675,53 @@
             const instrumentationHours = systemBreakdown.instrumentation || 0;
             const totalSystemHours = electricalHours + instrumentationHours + (systemBreakdown.telecom || 0);
             
-            console.log('Personnel calculation debug:', {
-                totalManhours,
-                electricalHours,
-                instrumentationHours,
-                totalSystemHours,
-                projectDuration,
-                totalWorkingHours
-            });
-            
-            // Electrical Engineers (20% engineering, 80% detailing typically)
+            // Electrical Engineers (based on electrical system manhours)
             if (appState.personnel?.enabled?.electricalEngineers && electricalHours > 0) {
                 const scope = appState.personnel.electricalEngineers.scope || 'design_check';
+                const productivity = appState.personnel.electricalEngineers.productivity || 1.0;
                 const engineeringRatio = scope === 'design' ? 0.3 : 
                                        scope === 'design_check' ? 0.2 : 0.15;
-                const engineeringHours = electricalHours * engineeringRatio;
-                personnelRequirements.electricalEngineers = engineeringHours / totalWorkingHours;
+                const engineeringHours = electricalHours * engineeringRatio / productivity;
+                personnelRequirements.electricalEngineers = Math.max(0.1, engineeringHours / totalWorkingHours);
             }
             
-            // Instrument Engineers  
+            // Instrument Engineers (based on instrumentation system manhours)
             if (appState.personnel?.enabled?.instrumentEngineers && instrumentationHours > 0) {
                 const scope = appState.personnel.instrumentEngineers.scope || 'design_check';
+                const productivity = appState.personnel.instrumentEngineers.productivity || 1.0;
                 const engineeringRatio = scope === 'design' ? 0.3 : 
                                        scope === 'design_check' ? 0.2 : 0.15;
-                const engineeringHours = instrumentationHours * engineeringRatio;
-                personnelRequirements.instrumentEngineers = engineeringHours / totalWorkingHours;
+                const engineeringHours = instrumentationHours * engineeringRatio / productivity;
+                personnelRequirements.instrumentEngineers = Math.max(0.1, engineeringHours / totalWorkingHours);
             }
             
-            // Electrical Detailers
+            // Electrical Detailers (based on electrical system manhours)
             if (appState.personnel?.enabled?.electricalDetailers && electricalHours > 0) {
-                const detailingHours = electricalHours * 0.8; // 80% detailing work
+                const detailingHours = electricalHours * 0.7; // 70% detailing work
                 const dailyRate = appState.personnel.electricalDetailers.rate || 7;
                 const requiredDays = detailingHours / dailyRate;
-                const availableDays = projectDuration * (appState.kpis.working_days_month?.value || 22);
-                personnelRequirements.electricalDetailers = requiredDays / availableDays;
+                const availableDays = projectDuration * (appState.kpis.global?.working_days_month?.value || 22);
+                personnelRequirements.electricalDetailers = Math.max(0.1, requiredDays / availableDays);
             }
             
-            // Instrument Detailers
+            // Instrument Detailers (based on instrumentation system manhours)
             if (appState.personnel?.enabled?.instrumentDetailers && instrumentationHours > 0) {
-                const detailingHours = instrumentationHours * 0.8; // 80% detailing work
+                const detailingHours = instrumentationHours * 0.7; // 70% detailing work
                 const dailyRate = appState.personnel.instrumentDetailers.rate || 6;
                 const requiredDays = detailingHours / dailyRate;
-                const availableDays = projectDuration * (appState.kpis.working_days_month?.value || 22);
-                personnelRequirements.instrumentDetailers = requiredDays / availableDays;
+                const availableDays = projectDuration * (appState.kpis.global?.working_days_month?.value || 22);
+                personnelRequirements.instrumentDetailers = Math.max(0.1, requiredDays / availableDays);
             }
             
-            // 3D Modelers (based on 3D modeling deliverable)
+            // 3D Modelers (based on total system manhours if 3D deliverable is selected)
             if (appState.personnel?.enabled?.['3DModelers']) {
-                const modelingDeliverable = appState.deliverables?.find(d => d.id === '3d_modeling');
-                if (modelingDeliverable && modelingDeliverable.selected) {
-                    const modelingHours = totalSystemHours * modelingDeliverable.multiplier;
+                const modelingDeliverable = appState.deliverables?.find(d => d.id === '3d_modeling' || d.name?.includes('3D'));
+                if (modelingDeliverable?.selected || totalSystemHours > 100) { // Include if significant hours
+                    const modelingHours = totalSystemHours * 0.15; // Approximate 15% for 3D modeling
                     const dailyRate = appState.personnel['3DModelers'].rate || 6;
                     const requiredDays = modelingHours / dailyRate;
-                    const availableDays = projectDuration * (appState.kpis.working_days_month?.value || 22);
-                    personnelRequirements.modelers = requiredDays / availableDays;
+                    const availableDays = projectDuration * (appState.kpis.global?.working_days_month?.value || 22);
+                    personnelRequirements.modelers = Math.max(0.1, requiredDays / availableDays);
                 }
             }
             
@@ -1705,8 +1732,6 @@
                                             personnelRequirements.electricalDetailers + 
                                             personnelRequirements.instrumentDetailers + 
                                             personnelRequirements.modelers;
-            
-            console.log('Personnel requirements calculated:', personnelRequirements);
             return personnelRequirements;
         }
 
@@ -1805,7 +1830,14 @@
                 sectionElement.style.pointerEvents = enabled ? 'auto' : 'none';
             }
             
-            updateTimelineCalculations();
+            // Update calculations without triggering infinite loop
+            if (feature === 'postConstruction') {
+                const timelineResults = calculateTimelineImpacts();
+                if (document.getElementById('postConstructionHours')) {
+                    document.getElementById('postConstructionHours').textContent = Math.round(timelineResults.postConstructionHours).toLocaleString() + ' hours';
+                }
+            }
+            
             saveToStorage();
         }
 
@@ -1820,23 +1852,53 @@
             const engineeringDuration = document.getElementById('engineeringDuration');
             if (engineeringDuration) timeline.project.engineeringDuration = parseFloat(engineeringDuration.value) || 8;
             
+            const constructionSupportDuration = document.getElementById('constructionSupportDuration');
+            if (constructionSupportDuration) timeline.project.constructionSupportDuration = parseFloat(constructionSupportDuration.value) || 4;
+            
+            // Update module scheduling values
+            const moduleStrategy = document.getElementById('moduleStrategy');
+            if (moduleStrategy) timeline.moduleScheduling.strategy = moduleStrategy.value;
+            
             const overlapPercentage = document.getElementById('overlapPercentage');
             if (overlapPercentage) timeline.moduleScheduling.overlapPercentage = parseInt(overlapPercentage.value) || 30;
+            
+            const moduleEngineeringDuration = document.getElementById('moduleEngineeringDuration');
+            if (moduleEngineeringDuration) timeline.moduleScheduling.moduleEngineeringDuration = parseFloat(moduleEngineeringDuration.value) || 6;
+            
+            // Update resource loading values
+            const peakUtilization = document.getElementById('peakUtilization');
+            if (peakUtilization) timeline.resourceLoading.peakUtilization = parseInt(peakUtilization.value) || 85;
+            
+            const rampUpDuration = document.getElementById('rampUpDuration');
+            if (rampUpDuration) timeline.resourceLoading.rampUpDuration = parseFloat(rampUpDuration.value) || 2;
+            
+            const rampDownDuration = document.getElementById('rampDownDuration');
+            if (rampDownDuration) timeline.resourceLoading.rampDownDuration = parseFloat(rampDownDuration.value) || 1;
+            
+            // Update post-construction values
+            const asBuiltEffort = document.getElementById('asBuiltEffort');
+            if (asBuiltEffort) timeline.postConstruction.asBuiltEffort = parseInt(asBuiltEffort.value) || 10;
+            
+            const handoverWork = document.getElementById('handoverWork');
+            if (handoverWork) timeline.postConstruction.handoverWork = parseInt(handoverWork.value) || 5;
+            
+            const postConstructionTeamSize = document.getElementById('postConstructionTeamSize');
+            if (postConstructionTeamSize) timeline.postConstruction.teamSizePercentage = parseInt(postConstructionTeamSize.value) || 25;
             
             // Calculate timeline impacts
             const timelineResults = calculateTimelineImpacts();
             
             // Update timeline display
-            document.getElementById('totalDurationDisplay').textContent = timeline.project.totalDuration.toFixed(1) + ' months';
-            document.getElementById('engineeringDurationDisplay').textContent = timeline.project.engineeringDuration.toFixed(1) + ' months';
-            document.getElementById('overlapFactorDisplay').textContent = timeline.moduleScheduling.overlapPercentage + '%';
-            document.getElementById('peakTeamSizeDisplay').textContent = Math.ceil(timelineResults.peakTeamSize) + ' people';
-            document.getElementById('postConstructionHours').textContent = Math.round(timelineResults.postConstructionHours).toLocaleString() + ' hours';
-            document.getElementById('criticalPathDuration').textContent = timelineResults.criticalPath.toFixed(1) + ' months';
+            if (document.getElementById('totalDurationDisplay')) {
+                document.getElementById('totalDurationDisplay').textContent = timeline.project.totalDuration.toFixed(1) + ' months';
+                document.getElementById('engineeringDurationDisplay').textContent = timeline.project.engineeringDuration.toFixed(1) + ' months';
+                document.getElementById('overlapFactorDisplay').textContent = timeline.moduleScheduling.overlapPercentage + '%';
+                document.getElementById('peakTeamSizeDisplay').textContent = Math.ceil(timelineResults.peakTeamSize) + ' people';
+                document.getElementById('postConstructionHours').textContent = Math.round(timelineResults.postConstructionHours).toLocaleString() + ' hours';
+                document.getElementById('criticalPathDuration').textContent = timelineResults.criticalPath.toFixed(1) + ' months';
+            }
             
-            // Recalculate personnel and overall results
-            updatePersonnelCalculations();
-            calculateResults();
+            // Save state without triggering full recalculation to avoid infinite loop
             saveToStorage();
         }
 
@@ -3355,6 +3417,154 @@
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 5000);
+        }
+
+        // Personnel & Staffing Initialization
+        function initializePersonnelSettings() {
+            // Initialize personnel settings if not already done
+            if (!appState.personnel) {
+                resetPersonnelFactors();
+            }
+            
+            // Update form values from state
+            updatePersonnelFormValues();
+            
+            // Calculate initial personnel requirements
+            setTimeout(() => {
+                updatePersonnelCalculations();
+            }, 100);
+        }
+        
+        function updatePersonnelFormValues() {
+            const personnel = appState.personnel;
+            if (!personnel) return;
+            
+            // Update all form fields with current state values
+            const formMappings = [
+                { id: 'leadEngineerType', path: 'leadEngineer.type' },
+                { id: 'leadEngineerPercentage', path: 'leadEngineer.percentage' },
+                { id: 'leadEngineerPremium', path: 'leadEngineer.premium' },
+                { id: 'electricalEngineerLevel', path: 'electricalEngineers.level' },
+                { id: 'electricalEngineerProductivity', path: 'electricalEngineers.productivity' },
+                { id: 'electricalEngineerScope', path: 'electricalEngineers.scope' },
+                { id: 'instrumentEngineerLevel', path: 'instrumentEngineers.level' },
+                { id: 'instrumentEngineerProductivity', path: 'instrumentEngineers.productivity' },
+                { id: 'instrumentEngineerScope', path: 'instrumentEngineers.scope' },
+                { id: 'electricalDetailerRate', path: 'electricalDetailers.rate' },
+                { id: 'electricalDetailerLevel', path: 'electricalDetailers.level' },
+                { id: 'electricalDetailerCAD', path: 'electricalDetailers.cad' },
+                { id: 'instrumentDetailerRate', path: 'instrumentDetailers.rate' },
+                { id: 'instrumentDetailerLevel', path: 'instrumentDetailers.level' },
+                { id: 'instrumentDetailerSpecialization', path: 'instrumentDetailers.specialization' },
+                { id: 'modelerSoftware', path: '3DModelers.software' },
+                { id: 'modelerRate', path: '3DModelers.rate' },
+                { id: 'modelerComplexity', path: '3DModelers.complexity' }
+            ];
+            
+            formMappings.forEach(mapping => {
+                const element = document.getElementById(mapping.id);
+                if (element) {
+                    const value = getNestedValue(personnel, mapping.path);
+                    if (value !== undefined) {
+                        element.value = value;
+                    }
+                }
+            });
+            
+            // Update checkbox states
+            Object.keys(personnel.enabled).forEach(key => {
+                const checkbox = document.getElementById(`enable${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                if (checkbox) {
+                    checkbox.checked = personnel.enabled[key];
+                    togglePersonnelSection(key);
+                }
+            });
+        }
+        
+        function getNestedValue(obj, path) {
+            return path.split('.').reduce((current, key) => current && current[key], obj);
+        }
+
+        // Project Timeline Initialization  
+        function initializeTimelineSettings() {
+            // Initialize timeline settings if not already done
+            if (!appState.timeline) {
+                resetTimelineSettings();
+            }
+            
+            // Update form values from state
+            updateTimelineFormValues();
+            
+            // Calculate initial timeline impacts
+            setTimeout(() => {
+                updateTimelineCalculations();
+            }, 100);
+        }
+        
+        function updateTimelineFormValues() {
+            const timeline = appState.timeline;
+            if (!timeline) return;
+            
+            // Update project duration values
+            const totalProjectDuration = document.getElementById('totalProjectDuration');
+            if (totalProjectDuration) totalProjectDuration.value = timeline.project.totalDuration;
+            
+            const engineeringDuration = document.getElementById('engineeringDuration');
+            if (engineeringDuration) engineeringDuration.value = timeline.project.engineeringDuration;
+            
+            const constructionSupportDuration = document.getElementById('constructionSupportDuration');
+            if (constructionSupportDuration) constructionSupportDuration.value = timeline.project.constructionSupportDuration;
+            
+            // Update module scheduling values
+            const moduleStrategy = document.getElementById('moduleStrategy');
+            if (moduleStrategy) moduleStrategy.value = timeline.moduleScheduling.strategy;
+            
+            const overlapPercentage = document.getElementById('overlapPercentage');
+            if (overlapPercentage) overlapPercentage.value = timeline.moduleScheduling.overlapPercentage;
+            
+            const moduleEngineeringDuration = document.getElementById('moduleEngineeringDuration');
+            if (moduleEngineeringDuration) moduleEngineeringDuration.value = timeline.moduleScheduling.moduleEngineeringDuration;
+            
+            // Update resource loading values
+            const peakUtilization = document.getElementById('peakUtilization');
+            if (peakUtilization) peakUtilization.value = timeline.resourceLoading.peakUtilization;
+            
+            const rampUpDuration = document.getElementById('rampUpDuration');
+            if (rampUpDuration) rampUpDuration.value = timeline.resourceLoading.rampUpDuration;
+            
+            const rampDownDuration = document.getElementById('rampDownDuration');
+            if (rampDownDuration) rampDownDuration.value = timeline.resourceLoading.rampDownDuration;
+            
+            // Update post-construction values
+            const asBuiltEffort = document.getElementById('asBuiltEffort');
+            if (asBuiltEffort) asBuiltEffort.value = timeline.postConstruction.asBuiltEffort;
+            
+            const handoverWork = document.getElementById('handoverWork');
+            if (handoverWork) handoverWork.value = timeline.postConstruction.handoverWork;
+            
+            const postConstructionTeamSize = document.getElementById('postConstructionTeamSize');
+            if (postConstructionTeamSize) postConstructionTeamSize.value = timeline.postConstruction.teamSizePercentage;
+            
+            // Update checkbox states
+            Object.keys(timeline.enabled).forEach(key => {
+                const checkbox = document.getElementById(`enable${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                if (checkbox) {
+                    checkbox.checked = timeline.enabled[key];
+                    toggleTimelineFeature(key);
+                }
+            });
+            
+            // Update summary display
+            updateTimelineSummaryDisplay();
+        }
+        
+        function updateTimelineSummaryDisplay() {
+            const timeline = appState.timeline;
+            if (!timeline) return;
+            
+            document.getElementById('totalDurationDisplay').textContent = timeline.project.totalDuration.toFixed(1) + ' months';
+            document.getElementById('engineeringDurationDisplay').textContent = timeline.project.engineeringDuration.toFixed(1) + ' months';
+            document.getElementById('overlapFactorDisplay').textContent = timeline.moduleScheduling.overlapPercentage + '%';
         }
 
         // Initialize the application when the page loads

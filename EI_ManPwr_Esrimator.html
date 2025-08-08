@@ -1443,16 +1443,41 @@
             { id: 'commissioning_plan', name: 'Commissioning Plan', category: 'Engineering', selected: false, multiplier: 0.3 }
         ];
 
-        // Default KPIs
+        // Default KPIs - Now organized by complexity
         const defaultKPIs = {
-            detailing_rate: { label: 'Detailing Rate (MH/Day)', value: 8, unit: 'hours' },
-            checking_rate: { label: 'Checking Rate (MH/Day)', value: 12, unit: 'hours' },
-            hourly_rate: { label: 'Hourly Rate', value: 850, unit: '₱' },
-            overhead_factor: { label: 'Overhead Factor', value: 1.25, unit: 'multiplier' },
-            productivity_factor: { label: 'Productivity Factor', value: 0.85, unit: 'multiplier' },
-            working_days_month: { label: 'Working Days/Month', value: 22, unit: 'days' },
-            sheets_per_day_det: { label: 'Sheets/Day (Detailing)', value: 3.5, unit: 'sheets' },
-            sheets_per_day_chk: { label: 'Sheets/Day (Checking)', value: 6, unit: 'sheets' }
+            global: {
+                hourly_rate: { label: 'Hourly Rate', value: 850, unit: '₱' },
+                overhead_factor: { label: 'Overhead Factor', value: 1.25, unit: 'multiplier' },
+                working_days_month: { label: 'Working Days/Month', value: 22, unit: 'days' }
+            },
+            'Highly Complex (H)': {
+                detailing_rate: { label: 'Detailing Rate (MH/Day)', value: 6, unit: 'hours' },
+                checking_rate: { label: 'Checking Rate (MH/Day)', value: 10, unit: 'hours' },
+                productivity_factor: { label: 'Productivity Factor', value: 0.75, unit: 'multiplier' },
+                quality_factor: { label: 'Quality Factor', value: 0.9, unit: 'multiplier' },
+                review_cycles: { label: 'Review Cycles', value: 3, unit: 'cycles' }
+            },
+            'Complex (C)': {
+                detailing_rate: { label: 'Detailing Rate (MH/Day)', value: 8, unit: 'hours' },
+                checking_rate: { label: 'Checking Rate (MH/Day)', value: 12, unit: 'hours' },
+                productivity_factor: { label: 'Productivity Factor', value: 0.85, unit: 'multiplier' },
+                quality_factor: { label: 'Quality Factor', value: 0.95, unit: 'multiplier' },
+                review_cycles: { label: 'Review Cycles', value: 2, unit: 'cycles' }
+            },
+            'Moderate (M)': {
+                detailing_rate: { label: 'Detailing Rate (MH/Day)', value: 10, unit: 'hours' },
+                checking_rate: { label: 'Checking Rate (MH/Day)', value: 14, unit: 'hours' },
+                productivity_factor: { label: 'Productivity Factor', value: 1.0, unit: 'multiplier' },
+                quality_factor: { label: 'Quality Factor', value: 1.0, unit: 'multiplier' },
+                review_cycles: { label: 'Review Cycles', value: 1, unit: 'cycles' }
+            },
+            'Simple (S)': {
+                detailing_rate: { label: 'Detailing Rate (MH/Day)', value: 12, unit: 'hours' },
+                checking_rate: { label: 'Checking Rate (MH/Day)', value: 16, unit: 'hours' },
+                productivity_factor: { label: 'Productivity Factor', value: 1.2, unit: 'multiplier' },
+                quality_factor: { label: 'Quality Factor', value: 1.1, unit: 'multiplier' },
+                review_cycles: { label: 'Review Cycles', value: 1, unit: 'cycles' }
+            }
         };
 
         // Initialize Application
@@ -2213,7 +2238,7 @@
             document.getElementById('additionalHours').textContent = Math.round(factors.additionalHours).toLocaleString();
             
             // Calculate cost impact 
-            const hourlyRate = appState.kpis.hourly_rate?.value || 850;
+            const hourlyRate = appState.kpis.global?.hourly_rate?.value || 850;
             const additionalCost = factors.additionalHours * hourlyRate;
             const multiplierCostImpact = baseBeforeParametric * (factors.totalMultiplier - 1) * hourlyRate;
             const totalCostImpact = additionalCost + multiplierCostImpact;
@@ -2343,6 +2368,7 @@
             appState.modules.push(newModule);
             renderModules();
             calculateResults();
+            updatePersonnelCalculations(); // Ensure staffing summary updates
             saveToStorage();
         }
 
@@ -2350,6 +2376,7 @@
             appState.modules = appState.modules.filter(m => m.id !== moduleId);
             renderModules();
             calculateResults();
+            updatePersonnelCalculations(); // Ensure staffing summary updates
             saveToStorage();
         }
 
@@ -2440,6 +2467,12 @@
                                    onchange="updateModuleSystem('${module.id}', 'mto', 'instrumentation', parseInt(this.value))">
                         </div>
                     </div>
+                    <div class="card" style="background: var(--light-blue); margin-top: 1rem; border-left: 4px solid ${getComplexityColor(module.type)}">
+                        <h5 style="color: var(--primary-blue); margin-bottom: 0.5rem;">KPIs for ${module.type}</h5>
+                        <div class="kpi-grid" id="moduleKPIs_${module.id}">
+                            ${renderModuleKPIs(module.type)}
+                        </div>
+                    </div>
                 `;
                 modulesList.appendChild(moduleDiv);
             });
@@ -2449,12 +2482,29 @@
             }
         }
 
+        function renderModuleKPIs(moduleType) {
+            if (!appState.kpis[moduleType]) return '<p>KPIs not available for this complexity</p>';
+            
+            let html = '';
+            Object.keys(appState.kpis[moduleType]).forEach(kpiKey => {
+                const kpi = appState.kpis[moduleType][kpiKey];
+                html += `
+                    <div class="kpi-item" style="background: white; margin-bottom: 0.5rem;">
+                        <div class="kpi-label">${kpi.label}</div>
+                        <div class="kpi-value">${kpi.value} ${kpi.unit}</div>
+                    </div>
+                `;
+            });
+            return html;
+        }
+
         // Module property update functions
         function updateModule(moduleId, property, value) {
             const module = appState.modules.find(m => m.id === moduleId);
             if (module) {
                 module[property] = value;
                 calculateResults();
+                updatePersonnelCalculations(); // Ensure staffing summary updates
                 saveToStorage();
             }
         }
@@ -2466,6 +2516,7 @@
                 const minValue = category === 'levels' ? 1 : 0;
                 module[category][system] = isNaN(value) || value < minValue ? minValue : value;
                 calculateResults();
+                updatePersonnelCalculations(); // Ensure staffing summary updates
                 saveToStorage();
             }
         }
@@ -2517,6 +2568,7 @@
             if (deliverable) {
                 deliverable.selected = !deliverable.selected;
                 calculateResults();
+                updatePersonnelCalculations(); // Ensure staffing summary updates
                 saveToStorage();
             }
         }
@@ -2546,14 +2598,18 @@
             const kpiGrid = document.getElementById('kpiGrid');
             kpiGrid.innerHTML = '';
 
-            // Initialize KPIs if empty
-            if (Object.keys(appState.kpis).length === 0) {
+            // Initialize KPIs if empty or old format
+            if (Object.keys(appState.kpis).length === 0 || !appState.kpis.global) {
                 appState.kpis = JSON.parse(JSON.stringify(defaultKPIs));
             }
 
-            // Render KPI inputs
-            Object.keys(appState.kpis).forEach(kpiKey => {
-                const kpi = appState.kpis[kpiKey];
+            // Render Global KPIs first
+            const globalSection = document.createElement('div');
+            globalSection.innerHTML = '<h4 style="color: var(--primary-blue); margin-bottom: 1rem;">Global KPIs (Applied to All Complexities)</h4>';
+            kpiGrid.appendChild(globalSection);
+
+            Object.keys(appState.kpis.global).forEach(kpiKey => {
+                const kpi = appState.kpis.global[kpiKey];
                 const kpiItem = document.createElement('div');
                 kpiItem.className = 'kpi-item';
                 kpiItem.innerHTML = `
@@ -2562,19 +2618,46 @@
                         <div style="display: flex; align-items: center;">
                             <input type="number" class="form-input" style="flex-grow: 1;" 
                                    value="${kpi.value}" step="0.01"
-                                   onchange="updateKPI('${kpiKey}', parseFloat(this.value))">
+                                   onchange="updateKPI('global', '${kpiKey}', parseFloat(this.value))">
                             <span style="margin-left: 8px; color: var(--gray-600);">${kpi.unit}</span>
                         </div>
                     </div>
                 `;
                 kpiGrid.appendChild(kpiItem);
             });
+
+            // Render KPIs by complexity
+            const complexityTypes = ['Highly Complex (H)', 'Complex (C)', 'Moderate (M)', 'Simple (S)'];
+            complexityTypes.forEach(complexity => {
+                const complexitySection = document.createElement('div');
+                complexitySection.innerHTML = `<h4 style="color: var(--primary-blue); margin: 2rem 0 1rem 0; border-top: 2px solid var(--gray-200); padding-top: 1rem;">${complexity} KPIs</h4>`;
+                kpiGrid.appendChild(complexitySection);
+
+                Object.keys(appState.kpis[complexity]).forEach(kpiKey => {
+                    const kpi = appState.kpis[complexity][kpiKey];
+                    const kpiItem = document.createElement('div');
+                    kpiItem.className = 'kpi-item';
+                    kpiItem.innerHTML = `
+                        <div class="kpi-label">${kpi.label}</div>
+                        <div class="form-group">
+                            <div style="display: flex; align-items: center;">
+                                <input type="number" class="form-input" style="flex-grow: 1;" 
+                                       value="${kpi.value}" step="0.01"
+                                       onchange="updateKPI('${complexity}', '${kpiKey}', parseFloat(this.value))">
+                                <span style="margin-left: 8px; color: var(--gray-600);">${kpi.unit}</span>
+                            </div>
+                        </div>
+                    `;
+                    kpiGrid.appendChild(kpiItem);
+                });
+            });
         }
 
-        function updateKPI(key, value) {
-            if (appState.kpis[key]) {
-                appState.kpis[key].value = isNaN(value) ? appState.kpis[key].value : value;
+        function updateKPI(category, key, value) {
+            if (appState.kpis[category] && appState.kpis[category][key]) {
+                appState.kpis[category][key].value = isNaN(value) ? appState.kpis[category][key].value : value;
                 calculateResults();
+                updatePersonnelCalculations(); // Ensure staffing summary updates
                 saveToStorage();
             }
         }
@@ -2615,10 +2698,12 @@
             // Calculate manhours for each module
             appState.modules.forEach(module => {
                 const moduleType = defaultModuleTypes[module.type];
+                const moduleKPIs = appState.kpis[module.type] || {};
                 const moduleResults = {
                     id: module.id,
                     name: module.customType || module.type,
                     quantity: module.quantity,
+                    complexity: module.type,
                     systems: {
                         electrical: 0,
                         telecom: 0,
@@ -2642,6 +2727,16 @@
                     // Add MTO factor if available
                     if (mto > 0) {
                         systemHours += mto * 0.5; // Assuming 0.5 hours per MTO item
+                    }
+
+                    // Apply complexity-specific productivity factor
+                    if (moduleKPIs.productivity_factor) {
+                        systemHours = systemHours / moduleKPIs.productivity_factor.value;
+                    }
+
+                    // Apply complexity-specific quality factor
+                    if (moduleKPIs.quality_factor) {
+                        systemHours = systemHours * moduleKPIs.quality_factor.value;
                     }
 
                     moduleResults.systems[system] = systemHours;
@@ -2707,24 +2802,38 @@
                 results.totalManhours = results.totalManhours / productivityFactor;
             }
 
-            // Calculate cost
-            if (appState.kpis.hourly_rate) {
-                const hourlyRate = appState.kpis.hourly_rate.value;
-                const overheadFactor = appState.kpis.overhead_factor ? appState.kpis.overhead_factor.value : 1.0;
+            // Calculate cost using global KPIs
+            if (appState.kpis.global && appState.kpis.global.hourly_rate) {
+                const hourlyRate = appState.kpis.global.hourly_rate.value;
+                const overheadFactor = appState.kpis.global.overhead_factor ? appState.kpis.global.overhead_factor.value : 1.0;
                 results.totalCost = results.totalManhours * hourlyRate * overheadFactor;
             }
 
-            // Calculate duration
-            if (appState.kpis.detailing_rate && appState.kpis.working_days_month) {
-                const detailingRate = appState.kpis.detailing_rate.value;
-                const workingDaysMonth = appState.kpis.working_days_month.value;
+            // Calculate duration using weighted average of complexity-specific detailing rates
+            if (appState.kpis.global && appState.kpis.global.working_days_month) {
+                const workingDaysMonth = appState.kpis.global.working_days_month.value;
                 
-                results.duration.days = Math.ceil(results.totalManhours / detailingRate);
+                // Calculate weighted average detailing rate based on module complexities
+                let totalWeightedRate = 0;
+                let totalWeight = 0;
+                
+                results.byModule.forEach(moduleResult => {
+                    const moduleKPIs = appState.kpis[moduleResult.complexity];
+                    if (moduleKPIs && moduleKPIs.detailing_rate) {
+                        const weight = moduleResult.total || 1;
+                        totalWeightedRate += moduleKPIs.detailing_rate.value * weight;
+                        totalWeight += weight;
+                    }
+                });
+                
+                const avgDetailingRate = totalWeight > 0 ? totalWeightedRate / totalWeight : 8;
+                
+                results.duration.days = Math.ceil(results.totalManhours / avgDetailingRate);
                 results.duration.months = Math.ceil(results.duration.days / workingDaysMonth * 10) / 10; // Round to 1 decimal place
                 
-                // Use timeline settings if available
+                // Use timeline settings if available (user-defined duration should override calculated)
                 if (appState.timeline && appState.timeline.project.engineeringDuration) {
-                    results.duration.months = Math.max(results.duration.months, appState.timeline.project.engineeringDuration);
+                    results.duration.months = appState.timeline.project.engineeringDuration;
                 }
             }
 
@@ -2775,7 +2884,7 @@
                     if (moduleResult.systems[system] > 0) {
                         const systemHours = moduleResult.systems[system];
                         const systemDays = systemHours / (appState.kpis.detailing_rate?.value || 8);
-                        const systemCost = systemHours * (appState.kpis.hourly_rate?.value || 0);
+                        const systemCost = systemHours * (appState.kpis.global?.hourly_rate?.value || 0);
 
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -2795,7 +2904,7 @@
                 Object.keys(appState.results.byDeliverable).forEach(delivId => {
                     const deliverable = appState.results.byDeliverable[delivId];
                     const delivDays = deliverable.hours / (appState.kpis.detailing_rate?.value || 8);
-                    const delivCost = deliverable.hours * (appState.kpis.hourly_rate?.value || 0);
+                    const delivCost = deliverable.hours * (appState.kpis.global?.hourly_rate?.value || 0);
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -2831,9 +2940,15 @@
                 
             document.getElementById('activeModules').innerText = 
                 appState.modules.reduce((sum, module) => sum + module.quantity, 0).toLocaleString();
-                
-            document.getElementById('projectDuration').innerText = 
-                appState.results.duration ? appState.results.duration.months.toFixed(1) : '0';
+            
+            // Use user-defined project duration from timeline settings, fall back to calculated duration
+            let displayDuration = '0';
+            if (appState.timeline && appState.timeline.project && appState.timeline.project.totalDuration) {
+                displayDuration = appState.timeline.project.totalDuration.toFixed(1);
+            } else if (appState.results && appState.results.duration) {
+                displayDuration = appState.results.duration.months.toFixed(1);
+            }
+            document.getElementById('projectDuration').innerText = displayDuration;
                 
             document.getElementById('totalCost').innerText = appState.results.totalCost ? 
                 '₱' + Math.round(appState.results.totalCost).toLocaleString() : '₱0';
@@ -2896,19 +3011,28 @@
                 chartContainer.appendChild(barContainer);
             });
             
-            // Module complexity chart
+            // Module complexity chart - improved pie chart implementation
             const complexityChart = document.getElementById('complexityChart');
             complexityChart.innerHTML = '';
             
-            // Count modules by complexity
+            // Count modules by complexity - ensure all complexity types are represented
+            const allComplexityTypes = ['Highly Complex (H)', 'Complex (C)', 'Moderate (M)', 'Simple (S)'];
             const complexityCounts = {};
+            
+            // Initialize all complexity types to 0
+            allComplexityTypes.forEach(type => {
+                complexityCounts[type] = 0;
+            });
+            
+            // Count actual modules
             appState.modules.forEach(module => {
                 const type = module.type;
                 complexityCounts[type] = (complexityCounts[type] || 0) + module.quantity;
             });
             
-            const complexityLabels = Object.keys(complexityCounts);
-            const complexityValues = complexityLabels.map(label => complexityCounts[label]);
+            // Filter out complexity types with zero count for display
+            const presentComplexities = allComplexityTypes.filter(type => complexityCounts[type] > 0);
+            const complexityValues = presentComplexities.map(label => complexityCounts[label]);
             const totalModules = complexityValues.reduce((sum, val) => sum + val, 0);
             
             if (totalModules > 0) {
@@ -2918,52 +3042,47 @@
                 pieChart.style.alignItems = 'center';
                 pieChart.style.margin = '20px 0';
                 
-                // Create simple pie chart visualization
+                // Create SVG pie chart for better rendering
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('width', '200');
+                svg.setAttribute('height', '200');
+                svg.setAttribute('viewBox', '0 0 200 200');
+                
                 let cumulativePercent = 0;
-                const pieSize = 150;
+                const centerX = 100;
+                const centerY = 100;
+                const radius = 80;
                 
-                const pieContainer = document.createElement('div');
-                pieContainer.style.width = `${pieSize}px`;
-                pieContainer.style.height = `${pieSize}px`;
-                pieContainer.style.position = 'relative';
-                pieContainer.style.borderRadius = '50%';
-                
-                complexityLabels.forEach((label, index) => {
+                presentComplexities.forEach((label, index) => {
                     const value = complexityValues[index];
                     const percent = (value / totalModules) * 100;
+                    const startAngle = (cumulativePercent / 100) * 360;
+                    const endAngle = ((cumulativePercent + percent) / 100) * 360;
                     
-                    const slice = document.createElement('div');
-                    slice.style.position = 'absolute';
-                    slice.style.width = '100%';
-                    slice.style.height = '100%';
-                    slice.style.borderRadius = '50%';
-                    slice.style.clip = `rect(0, ${pieSize}px, ${pieSize}px, ${pieSize/2}px)`;
+                    // Create pie slice path
+                    const largeArcFlag = percent > 50 ? 1 : 0;
+                    const startAngleRad = (startAngle * Math.PI) / 180;
+                    const endAngleRad = (endAngle * Math.PI) / 180;
                     
-                    const color = getComplexityColor(label);
-                    const sliceBg = document.createElement('div');
-                    sliceBg.style.position = 'absolute';
-                    sliceBg.style.width = '100%';
-                    sliceBg.style.height = '100%';
-                    sliceBg.style.borderRadius = '50%';
-                    sliceBg.style.clip = `rect(0, ${pieSize/2}px, ${pieSize}px, 0)`;
-                    sliceBg.style.transform = `rotate(${cumulativePercent * 3.6}deg)`;
-                    sliceBg.style.backgroundColor = color;
+                    const x1 = centerX + radius * Math.cos(startAngleRad);
+                    const y1 = centerY + radius * Math.sin(startAngleRad);
+                    const x2 = centerX + radius * Math.cos(endAngleRad);
+                    const y2 = centerY + radius * Math.sin(endAngleRad);
                     
-                    slice.appendChild(sliceBg);
+                    const pathData = [
+                        `M ${centerX} ${centerY}`,
+                        `L ${x1} ${y1}`,
+                        `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                        'Z'
+                    ].join(' ');
                     
-                    if (percent > 50) {
-                        const sliceBg2 = document.createElement('div');
-                        sliceBg2.style.position = 'absolute';
-                        sliceBg2.style.width = '100%';
-                        sliceBg2.style.height = '100%';
-                        sliceBg2.style.borderRadius = '50%';
-                        sliceBg2.style.clip = `rect(0, ${pieSize}px, ${pieSize}px, ${pieSize/2}px)`;
-                        sliceBg2.style.transform = `rotate(${(cumulativePercent + 50) * 3.6}deg)`;
-                        sliceBg2.style.backgroundColor = color;
-                        slice.appendChild(sliceBg2);
-                    }
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', pathData);
+                    path.setAttribute('fill', getComplexityColor(label));
+                    path.setAttribute('stroke', 'white');
+                    path.setAttribute('stroke-width', '2');
                     
-                    pieContainer.appendChild(slice);
+                    svg.appendChild(path);
                     cumulativePercent += percent;
                 });
                 
@@ -2973,7 +3092,7 @@
                 legend.style.flexDirection = 'column';
                 legend.style.marginLeft = '20px';
                 
-                complexityLabels.forEach((label, index) => {
+                presentComplexities.forEach((label, index) => {
                     const value = complexityValues[index];
                     const percent = (value / totalModules) * 100;
                     
@@ -2986,7 +3105,8 @@
                     colorBox.style.width = '15px';
                     colorBox.style.height = '15px';
                     colorBox.style.backgroundColor = getComplexityColor(label);
-                    colorBox.style.marginRight = '5px';
+                    colorBox.style.marginRight = '8px';
+                    colorBox.style.border = '1px solid #ccc';
                     
                     const labelText = document.createElement('div');
                     labelText.textContent = `${label}: ${value} (${percent.toFixed(1)}%)`;
@@ -2996,7 +3116,7 @@
                     legend.appendChild(legendItem);
                 });
                 
-                pieChart.appendChild(pieContainer);
+                pieChart.appendChild(svg);
                 pieChart.appendChild(legend);
                 complexityChart.appendChild(pieChart);
             } else {
@@ -3119,6 +3239,18 @@
                 const savedState = localStorage.getItem('agpEiEstimatingTool');
                 if (savedState) {
                     appState = JSON.parse(savedState);
+                    
+                    // Check if KPIs need to be migrated from legacy format
+                    if (appState.kpis && !appState.kpis.global) {
+                        // Migrate legacy KPI structure to new format
+                        const legacyKPIs = appState.kpis;
+                        appState.kpis = JSON.parse(JSON.stringify(defaultKPIs));
+                        
+                        // Preserve any custom values from legacy structure
+                        if (legacyKPIs.hourly_rate) appState.kpis.global.hourly_rate.value = legacyKPIs.hourly_rate.value;
+                        if (legacyKPIs.overhead_factor) appState.kpis.global.overhead_factor.value = legacyKPIs.overhead_factor.value;
+                        if (legacyKPIs.working_days_month) appState.kpis.global.working_days_month.value = legacyKPIs.working_days_month.value;
+                    }
                 } else {
                     // Initialize with defaults
                     appState.deliverables = JSON.parse(JSON.stringify(defaultDeliverables));

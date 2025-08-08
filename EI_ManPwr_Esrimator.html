@@ -1124,45 +1124,81 @@
 
         function updateParametricModel() {
             const pm = appState.parametricModel;
+            if (!pm) return;
             
             // Update productivity values
-            pm.productivity.teamExperience = parseFloat(document.getElementById('teamExperience').value);
-            pm.productivity.projectFamiliarity = parseFloat(document.getElementById('projectFamiliarity').value);
-            pm.productivity.customProductivity = parseFloat(document.getElementById('customProductivity').value);
+            const teamExperience = document.getElementById('teamExperience');
+            if (teamExperience) pm.productivity.teamExperience = parseFloat(teamExperience.value);
+            
+            const projectFamiliarity = document.getElementById('projectFamiliarity');
+            if (projectFamiliarity) pm.productivity.projectFamiliarity = parseFloat(projectFamiliarity.value);
+            
+            const customProductivity = document.getElementById('customProductivity');
+            if (customProductivity) pm.productivity.customProductivity = parseFloat(customProductivity.value);
             
             // Update resource timing values
-            pm.resourceTiming.onboardingDays = parseInt(document.getElementById('onboardingDays').value);
-            pm.resourceTiming.offboardingDays = parseInt(document.getElementById('offboardingDays').value);
-            pm.resourceTiming.teamSize = parseInt(document.getElementById('teamSize').value);
+            const onboardingDays = document.getElementById('onboardingDays');
+            if (onboardingDays) pm.resourceTiming.onboardingDays = parseInt(onboardingDays.value) || 0;
+            
+            const offboardingDays = document.getElementById('offboardingDays');
+            if (offboardingDays) pm.resourceTiming.offboardingDays = parseInt(offboardingDays.value) || 0;
+            
+            const teamSize = document.getElementById('teamSize');
+            if (teamSize) pm.resourceTiming.teamSize = parseInt(teamSize.value) || 1;
             
             // Update and calculate leave rate
-            pm.leaveRate.annualLeaveDays = parseInt(document.getElementById('annualLeaveDays').value);
-            pm.leaveRate.sickLeaveDays = parseInt(document.getElementById('sickLeaveDays').value);
-            pm.leaveRate.publicHolidays = parseInt(document.getElementById('publicHolidays').value);
+            const annualLeaveDays = document.getElementById('annualLeaveDays');
+            if (annualLeaveDays) pm.leaveRate.annualLeaveDays = parseInt(annualLeaveDays.value) || 0;
+            
+            const sickLeaveDays = document.getElementById('sickLeaveDays');
+            if (sickLeaveDays) pm.leaveRate.sickLeaveDays = parseInt(sickLeaveDays.value) || 0;
+            
+            const publicHolidays = document.getElementById('publicHolidays');
+            if (publicHolidays) pm.leaveRate.publicHolidays = parseInt(publicHolidays.value) || 0;
             
             // Calculate monthly leave rate
             const totalLeaveDays = pm.leaveRate.annualLeaveDays + pm.leaveRate.sickLeaveDays + pm.leaveRate.publicHolidays;
             const workingDaysYear = 260; // Approximately 5 days * 52 weeks
             pm.leaveRate.monthlyLeaveRate = Math.round((totalLeaveDays / workingDaysYear) * 100 * 10) / 10;
-            document.getElementById('monthlyLeaveRate').value = pm.leaveRate.monthlyLeaveRate;
+            const monthlyLeaveRate = document.getElementById('monthlyLeaveRate');
+            if (monthlyLeaveRate) monthlyLeaveRate.value = pm.leaveRate.monthlyLeaveRate;
             
             // Update documentation values
-            pm.documentation.asBuiltLevel = parseFloat(document.getElementById('asBuiltLevel').value);
-            pm.documentation.redlineLevel = parseFloat(document.getElementById('redlineLevel').value);
-            pm.documentation.docQualityLevel = parseFloat(document.getElementById('docQualityLevel').value);
+            const asBuiltLevel = document.getElementById('asBuiltLevel');
+            if (asBuiltLevel) pm.documentation.asBuiltLevel = parseFloat(asBuiltLevel.value);
+            
+            const redlineLevel = document.getElementById('redlineLevel');
+            if (redlineLevel) pm.documentation.redlineLevel = parseFloat(redlineLevel.value);
+            
+            const docQualityLevel = document.getElementById('docQualityLevel');
+            if (docQualityLevel) pm.documentation.docQualityLevel = parseFloat(docQualityLevel.value);
             
             // Update client interaction values
-            pm.clientInteraction.weeklyMeetings = parseInt(document.getElementById('weeklyMeetings').value);
-            pm.clientInteraction.siteVisits = parseInt(document.getElementById('siteVisits').value);
-            pm.clientInteraction.reviewCycles = parseFloat(document.getElementById('reviewCycles').value);
-            pm.clientInteraction.approvalComplexity = parseFloat(document.getElementById('approvalComplexity').value);
+            const weeklyMeetings = document.getElementById('weeklyMeetings');
+            if (weeklyMeetings) pm.clientInteraction.weeklyMeetings = parseInt(weeklyMeetings.value) || 0;
+            
+            const siteVisits = document.getElementById('siteVisits');
+            if (siteVisits) pm.clientInteraction.siteVisits = parseInt(siteVisits.value) || 0;
+            
+            const reviewCycles = document.getElementById('reviewCycles');
+            if (reviewCycles) pm.clientInteraction.reviewCycles = parseFloat(reviewCycles.value);
+            
+            const approvalComplexity = document.getElementById('approvalComplexity');
+            if (approvalComplexity) pm.clientInteraction.approvalComplexity = parseFloat(approvalComplexity.value);
             
             // Update and calculate contingency
-            pm.contingency.technicalRisk = parseFloat(document.getElementById('technicalRisk').value);
-            pm.contingency.scheduleRisk = parseFloat(document.getElementById('scheduleRisk').value);
-            pm.contingency.scopeRisk = parseFloat(document.getElementById('scopeRisk').value);
+            const technicalRisk = document.getElementById('technicalRisk');
+            if (technicalRisk) pm.contingency.technicalRisk = parseFloat(technicalRisk.value) || 0;
+            
+            const scheduleRisk = document.getElementById('scheduleRisk');
+            if (scheduleRisk) pm.contingency.scheduleRisk = parseFloat(scheduleRisk.value) || 0;
+            
+            const scopeRisk = document.getElementById('scopeRisk');
+            if (scopeRisk) pm.contingency.scopeRisk = parseFloat(scopeRisk.value) || 0;
+            
             pm.contingency.totalContingency = pm.contingency.technicalRisk + pm.contingency.scheduleRisk + pm.contingency.scopeRisk;
-            document.getElementById('totalContingency').value = pm.contingency.totalContingency;
+            const totalContingency = document.getElementById('totalContingency');
+            if (totalContingency) totalContingency.value = pm.contingency.totalContingency;
             
             // Update summary display
             updateParametricSummary();
@@ -1174,6 +1210,19 @@
 
         function calculateParametricFactors() {
             const pm = appState.parametricModel;
+            if (!pm) {
+                return {
+                    productivity: 1.0,
+                    resourceTiming: 0,
+                    leaveRate: 1.0,
+                    documentation: 1.0,
+                    clientInteraction: 1.0,
+                    contingency: 1.0,
+                    totalMultiplier: 1.0,
+                    additionalHours: 0
+                };
+            }
+            
             let parametricFactors = {
                 productivity: 1.0,
                 resourceTiming: 0, // Additional hours, not a multiplier
@@ -1188,55 +1237,70 @@
             // Calculate productivity factor
             if (pm.enabled.productivity) {
                 if (pm.productivity.customProductivity !== 1.0) {
-                    parametricFactors.productivity = pm.productivity.customProductivity;
+                    parametricFactors.productivity = pm.productivity.customProductivity || 1.0;
                 } else {
-                    parametricFactors.productivity = pm.productivity.teamExperience * pm.productivity.projectFamiliarity;
+                    const teamExp = pm.productivity.teamExperience || 1.0;
+                    const projFam = pm.productivity.projectFamiliarity || 1.0;
+                    parametricFactors.productivity = teamExp * projFam;
                 }
             }
             
             // Calculate resource timing (additional hours)
             if (pm.enabled.resourceTiming) {
-                const totalOnboardingHours = (pm.resourceTiming.onboardingDays * 8) * pm.resourceTiming.teamSize;
-                const totalOffboardingHours = (pm.resourceTiming.offboardingDays * 8) * pm.resourceTiming.teamSize;
+                const onboardingDays = pm.resourceTiming.onboardingDays || 0;
+                const offboardingDays = pm.resourceTiming.offboardingDays || 0;
+                const teamSize = pm.resourceTiming.teamSize || 1;
+                const totalOnboardingHours = (onboardingDays * 8) * teamSize;
+                const totalOffboardingHours = (offboardingDays * 8) * teamSize;
                 parametricFactors.resourceTiming = totalOnboardingHours + totalOffboardingHours;
                 parametricFactors.additionalHours += parametricFactors.resourceTiming;
             }
             
             // Calculate leave rate factor
             if (pm.enabled.leaveRate) {
-                parametricFactors.leaveRate = 1 + (pm.leaveRate.monthlyLeaveRate / 100);
+                const monthlyLeaveRate = pm.leaveRate.monthlyLeaveRate || 0;
+                parametricFactors.leaveRate = 1 + (monthlyLeaveRate / 100);
             }
             
             // Calculate documentation factor
             if (pm.enabled.documentation) {
-                const docFactor = 1 + pm.documentation.asBuiltLevel + pm.documentation.redlineLevel;
-                parametricFactors.documentation = docFactor * pm.documentation.docQualityLevel;
+                const asBuiltLevel = pm.documentation.asBuiltLevel || 0;
+                const redlineLevel = pm.documentation.redlineLevel || 0;
+                const docQualityLevel = pm.documentation.docQualityLevel || 1.0;
+                const docFactor = 1 + asBuiltLevel + redlineLevel;
+                parametricFactors.documentation = docFactor * docQualityLevel;
             }
             
             // Calculate client interaction factor
             if (pm.enabled.clientInteraction) {
-                // Weekly meetings impact (assume project duration in weeks)
-                const projectDurationWeeks = appState.results.duration ? appState.results.duration.months * 4.33 : 12;
-                const meetingHours = pm.clientInteraction.weeklyMeetings * projectDurationWeeks;
-                const siteVisitHours = pm.clientInteraction.siteVisits * 8; // 8 hours per site visit
+                // Weekly meetings impact (assume project duration in weeks or default to 12 weeks)
+                const projectDurationMonths = (appState.results && appState.results.duration) ? appState.results.duration.months : 3;
+                const projectDurationWeeks = projectDurationMonths * 4.33;
+                const weeklyMeetings = pm.clientInteraction.weeklyMeetings || 0;
+                const siteVisits = pm.clientInteraction.siteVisits || 0;
+                const meetingHours = weeklyMeetings * projectDurationWeeks;
+                const siteVisitHours = siteVisits * 8; // 8 hours per site visit
                 parametricFactors.additionalHours += meetingHours + siteVisitHours;
                 
                 // Review cycles and approval complexity
-                const interactionFactor = (1 + pm.clientInteraction.reviewCycles) * pm.clientInteraction.approvalComplexity;
+                const reviewCycles = pm.clientInteraction.reviewCycles || 0;
+                const approvalComplexity = pm.clientInteraction.approvalComplexity || 1.0;
+                const interactionFactor = (1 + reviewCycles) * approvalComplexity;
                 parametricFactors.clientInteraction = interactionFactor;
             }
             
             // Calculate contingency factor
             if (pm.enabled.contingency) {
-                parametricFactors.contingency = 1 + (pm.contingency.totalContingency / 100);
+                const totalContingency = pm.contingency.totalContingency || 0;
+                parametricFactors.contingency = 1 + (totalContingency / 100);
             }
             
-            // Calculate total multiplier
-            parametricFactors.totalMultiplier = parametricFactors.productivity * 
-                                               parametricFactors.leaveRate * 
-                                               parametricFactors.documentation * 
-                                               parametricFactors.clientInteraction * 
-                                               parametricFactors.contingency;
+            // Calculate total multiplier (ensure no null values)
+            parametricFactors.totalMultiplier = (parametricFactors.productivity || 1.0) * 
+                                               (parametricFactors.leaveRate || 1.0) * 
+                                               (parametricFactors.documentation || 1.0) * 
+                                               (parametricFactors.clientInteraction || 1.0) * 
+                                               (parametricFactors.contingency || 1.0);
             
             return parametricFactors;
         }

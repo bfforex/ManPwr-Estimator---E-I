@@ -1551,6 +1551,22 @@
             const leadEngineerPremium = document.getElementById('leadEngineerPremium');
             if (leadEngineerPremium) personnel.leadEngineer.premium = parseInt(leadEngineerPremium.value) || 25;
             
+            // Update other personnel values
+            const electricalEngineerLevel = document.getElementById('electricalEngineerLevel');
+            if (electricalEngineerLevel) personnel.electricalEngineers.level = electricalEngineerLevel.value;
+            
+            const electricalEngineerProductivity = document.getElementById('electricalEngineerProductivity');
+            if (electricalEngineerProductivity) personnel.electricalEngineers.productivity = parseFloat(electricalEngineerProductivity.value) || 1.0;
+            
+            const electricalDetailerRate = document.getElementById('electricalDetailerRate');
+            if (electricalDetailerRate) personnel.electricalDetailers.rate = parseFloat(electricalDetailerRate.value) || 7;
+            
+            const instrumentDetailerRate = document.getElementById('instrumentDetailerRate');
+            if (instrumentDetailerRate) personnel.instrumentDetailers.rate = parseFloat(instrumentDetailerRate.value) || 6;
+            
+            const modelerRate = document.getElementById('modelerRate');
+            if (modelerRate) personnel['3DModelers'].rate = parseFloat(modelerRate.value) || 6;
+            
             // Calculate personnel requirements based on project scope
             const results = calculatePersonnelRequirements();
             
@@ -1572,7 +1588,7 @@
         function calculatePersonnelRequirements() {
             const results = appState.results || {};
             const totalManhours = results.totalManhours || 0;
-            const projectDuration = appState.timeline.project.engineeringDuration || 8; // months
+            const projectDuration = appState.timeline?.project?.engineeringDuration || 8; // months
             const workingHoursPerMonth = (appState.kpis.working_days_month?.value || 22) * 8; // hours per month
             const totalWorkingHours = projectDuration * workingHoursPerMonth;
             
@@ -1589,8 +1605,8 @@
             if (totalManhours === 0) return personnelRequirements;
             
             // Lead Engineer calculation
-            if (appState.personnel.enabled.leadEngineer) {
-                const percentage = appState.personnel.leadEngineer.percentage / 100;
+            if (appState.personnel?.enabled?.leadEngineer) {
+                const percentage = (appState.personnel.leadEngineer.percentage || 50) / 100;
                 personnelRequirements.leadEngineer = percentage;
             }
             
@@ -1600,24 +1616,35 @@
             const instrumentationHours = systemBreakdown.instrumentation || 0;
             const totalSystemHours = electricalHours + instrumentationHours + (systemBreakdown.telecom || 0);
             
+            console.log('Personnel calculation debug:', {
+                totalManhours,
+                electricalHours,
+                instrumentationHours,
+                totalSystemHours,
+                projectDuration,
+                totalWorkingHours
+            });
+            
             // Electrical Engineers (20% engineering, 80% detailing typically)
-            if (appState.personnel.enabled.electricalEngineers && electricalHours > 0) {
-                const engineeringRatio = appState.personnel.electricalEngineers.scope === 'design' ? 0.3 : 
-                                       appState.personnel.electricalEngineers.scope === 'design_check' ? 0.2 : 0.15;
+            if (appState.personnel?.enabled?.electricalEngineers && electricalHours > 0) {
+                const scope = appState.personnel.electricalEngineers.scope || 'design_check';
+                const engineeringRatio = scope === 'design' ? 0.3 : 
+                                       scope === 'design_check' ? 0.2 : 0.15;
                 const engineeringHours = electricalHours * engineeringRatio;
                 personnelRequirements.electricalEngineers = engineeringHours / totalWorkingHours;
             }
             
             // Instrument Engineers  
-            if (appState.personnel.enabled.instrumentEngineers && instrumentationHours > 0) {
-                const engineeringRatio = appState.personnel.instrumentEngineers.scope === 'design' ? 0.3 : 
-                                       appState.personnel.instrumentEngineers.scope === 'design_check' ? 0.2 : 0.15;
+            if (appState.personnel?.enabled?.instrumentEngineers && instrumentationHours > 0) {
+                const scope = appState.personnel.instrumentEngineers.scope || 'design_check';
+                const engineeringRatio = scope === 'design' ? 0.3 : 
+                                       scope === 'design_check' ? 0.2 : 0.15;
                 const engineeringHours = instrumentationHours * engineeringRatio;
                 personnelRequirements.instrumentEngineers = engineeringHours / totalWorkingHours;
             }
             
             // Electrical Detailers
-            if (appState.personnel.enabled.electricalDetailers && electricalHours > 0) {
+            if (appState.personnel?.enabled?.electricalDetailers && electricalHours > 0) {
                 const detailingHours = electricalHours * 0.8; // 80% detailing work
                 const dailyRate = appState.personnel.electricalDetailers.rate || 7;
                 const requiredDays = detailingHours / dailyRate;
@@ -1626,7 +1653,7 @@
             }
             
             // Instrument Detailers
-            if (appState.personnel.enabled.instrumentDetailers && instrumentationHours > 0) {
+            if (appState.personnel?.enabled?.instrumentDetailers && instrumentationHours > 0) {
                 const detailingHours = instrumentationHours * 0.8; // 80% detailing work
                 const dailyRate = appState.personnel.instrumentDetailers.rate || 6;
                 const requiredDays = detailingHours / dailyRate;
@@ -1635,8 +1662,8 @@
             }
             
             // 3D Modelers (based on 3D modeling deliverable)
-            if (appState.personnel.enabled['3DModelers']) {
-                const modelingDeliverable = appState.deliverables.find(d => d.id === '3d_modeling');
+            if (appState.personnel?.enabled?.['3DModelers']) {
+                const modelingDeliverable = appState.deliverables?.find(d => d.id === '3d_modeling');
                 if (modelingDeliverable && modelingDeliverable.selected) {
                     const modelingHours = totalSystemHours * modelingDeliverable.multiplier;
                     const dailyRate = appState.personnel['3DModelers'].rate || 6;
@@ -1654,6 +1681,7 @@
                                             personnelRequirements.instrumentDetailers + 
                                             personnelRequirements.modelers;
             
+            console.log('Personnel requirements calculated:', personnelRequirements);
             return personnelRequirements;
         }
 
@@ -2701,6 +2729,29 @@
             }
 
             appState.results = results;
+            
+            // Update personnel calculations if personnel tab is initialized
+            if (appState.personnel) {
+                const personnelResults = calculatePersonnelRequirements();
+                if (document.getElementById('leadEngineerCount')) {
+                    document.getElementById('leadEngineerCount').textContent = personnelResults.leadEngineer.toFixed(1) + ' FTE';
+                    document.getElementById('electricalEngineerCount').textContent = personnelResults.electricalEngineers.toFixed(1) + ' FTE';
+                    document.getElementById('instrumentEngineerCount').textContent = personnelResults.instrumentEngineers.toFixed(1) + ' FTE';
+                    document.getElementById('electricalDetailerCount').textContent = personnelResults.electricalDetailers.toFixed(1) + ' FTE';
+                    document.getElementById('instrumentDetailerCount').textContent = personnelResults.instrumentDetailers.toFixed(1) + ' FTE';
+                    document.getElementById('modelerCount').textContent = personnelResults.modelers.toFixed(1) + ' FTE';
+                    document.getElementById('totalTeamSize').textContent = personnelResults.totalFTE.toFixed(1) + ' FTE';
+                    document.getElementById('peakHeadcount').textContent = Math.ceil(personnelResults.totalFTE) + ' People';
+                }
+            }
+            
+            // Update timeline calculations if timeline tab is initialized
+            if (appState.timeline && document.getElementById('peakTeamSizeDisplay')) {
+                const timelineResults = calculateTimelineImpacts();
+                document.getElementById('peakTeamSizeDisplay').textContent = Math.ceil(timelineResults.peakTeamSize) + ' people';
+                document.getElementById('postConstructionHours').textContent = Math.round(timelineResults.postConstructionHours).toLocaleString() + ' hours';
+                document.getElementById('criticalPathDuration').textContent = timelineResults.criticalPath.toFixed(1) + ' months';
+            }
             
             // Update dashboard with new results
             updateDashboard();
